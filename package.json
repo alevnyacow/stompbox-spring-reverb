@@ -1,0 +1,37 @@
+{
+  "name": "@stompbox/spring-reverb",
+  "version": "0.0.1",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rslib",
+    "check": "biome check --write",
+    "dev": "rslib --watch",
+    "format": "biome format --write",
+    "test": "rstest",
+    "test:watch": "rstest --watch"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.11",
+    "@rslib/core": "^0.21.2",
+    "@rstest/adapter-rslib": "^0.2.2",
+    "@rstest/core": "^0.9.7",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/npm": "^13.1.5",
+    "@types/node": "^24.12.2",
+    "semantic-release": "^25.0.3",
+    "typescript": "^6.0.2"
+  }
+}
