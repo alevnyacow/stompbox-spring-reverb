@@ -1,6 +1,10 @@
 {
   "name": "@stompbox/spring-reverb",
   "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alevnyacow/stompbox-spring-reverb.git"
+  },
   "type": "module",
   "exports": {
     ".": {
