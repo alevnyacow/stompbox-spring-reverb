@@ -1,6 +1,7 @@
 {
   "name": "@stompbox/spring-reverb",
   "version": "1.5.1",
+  "keywords": ["handler", "use case", "usecase", "use-case", "domain driven", "ddd", "domain driven design", "next"],
   "description": "Framework-agnostic plug-and-play handlers with adapters.",
   "repository": {
     "type": "git",
