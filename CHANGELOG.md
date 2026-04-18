@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v1.0.2...v1.1.0) (2026-04-18)
+
+
+### Features
+
+* handler ([4ee2ca8](https://github.com/alevnyacow/stompbox-spring-reverb/commit/4ee2ca88c001d60ba79ec20dbf13515a521be58b))
+
 ## [1.0.2](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v1.0.1...v1.0.2) (2026-04-17)
 
 
