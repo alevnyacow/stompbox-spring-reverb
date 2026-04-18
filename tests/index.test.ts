@@ -5,7 +5,7 @@ import z from 'zod';
 import { NextRequest } from 'next/server';
 
 test('Next adapter', async () => {
-  class S extends Handler(z.object({ string: z.string(), secondString: z.string() }), z.object({ stringInUpperCase: z.string() })) {
+  class UpperCaseHandler extends Handler(z.object({ string: z.string(), secondString: z.string() }), z.object({ stringInUpperCase: z.string() })) {
     async handleLoose(input: { string: string; secondString: string }): Promise<{ stringInUpperCase: string; }> {
       return {
         stringInUpperCase: input.string.toUpperCase() + ' ' + input.secondString.toUpperCase()
@@ -13,7 +13,9 @@ test('Next adapter', async () => {
     }
   }
 
-  const NextRoute = new S().handleWithAdapter(nextAdapter(S)({ string: 'query', secondString: 'body' }))
+  const adapter = nextAdapter(UpperCaseHandler)({ string: 'query', secondString: 'body' })
+  const handler = new UpperCaseHandler()
+  const NextRoute = handler.handleWithAdapter(adapter)
 
   const data = await NextRoute(new NextRequest('http://localhost.mock.url:3000?string=hello', {
     body: JSON.stringify({ secondString: 'world' }),
