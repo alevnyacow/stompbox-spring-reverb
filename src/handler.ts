@@ -1,4 +1,13 @@
 import z, { ZodType } from "zod";
+import { Limiter } from '@stompbox/limiter'
+import { zodErrorDetails } from '@stompbox/limiter/zod'
+
+enum HandlerErrorCodes {
+    INVALID_INPUT = 'HANDLER___INVALID_INPUT',
+    INVALID_OUTPUT = 'HANDLER___INVALID_OUTPUT'
+}
+
+export class HandlerError extends Limiter(HandlerErrorCodes) {}
 
 export const Handler = <Input extends ZodType, Output extends ZodType>(inputSchema: Input, outputSchema: Output) => {
     abstract class HandlerClass {
@@ -7,10 +16,17 @@ export const Handler = <Input extends ZodType, Output extends ZodType>(inputSche
 
         abstract handleLoose(input: z.infer<Input>): Promise<z.infer<Output>>
 
-        handle = async (data: z.infer<Input>): Promise<z.infer<Output>> => {
-            const input = HandlerClass.inputSchema.parse(data)
-            const output = await this.handleLoose(input)
-            return HandlerClass.outputSchema.parse(output)
+        handle = async (input: z.infer<Input>): Promise<z.infer<Output>> => {
+            const parsedInput = HandlerClass.inputSchema.safeParse(input)
+            if (!parsedInput.success) {
+                throw new HandlerError('INVALID_INPUT', zodErrorDetails(parsedInput.error))
+            }
+            const output = await this.handleLoose(parsedInput.data)
+            const parsedOutput = HandlerClass.outputSchema.safeParse(output)
+            if (!parsedOutput.success) {
+                throw new HandlerError('INVALID_OUTPUT', zodErrorDetails(parsedOutput.error))
+            }
+            return parsedOutput.data
         }
 
         handleWithAdapter = <TransformInput, TransformOutput>(adapter: {
