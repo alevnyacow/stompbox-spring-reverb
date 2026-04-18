@@ -3,8 +3,8 @@ import { Limiter } from '@stompbox/limiter'
 import { zodErrorDetails } from '@stompbox/limiter/zod'
 
 enum HandlerErrorCodes {
-    INVALID_INPUT = 'HANDLER___INVALID_INPUT',
-    INVALID_OUTPUT = 'HANDLER___INVALID_OUTPUT'
+    INVALID_INPUT = 'SPRING-REVERB___INVALID-HANDLER-INPUT',
+    INVALID_OUTPUT = 'SPRING-REVERB___INVALID-HANDLER-OUTPUT'
 }
 
 export type Adapter<AdapterInput, AdapterOutput, HandlerInputSchema extends ZodType, HandlerOutputSchema extends ZodType> = {
