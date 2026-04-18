@@ -3,20 +3,22 @@ import { Handler } from '../src/handler'
 import { nextAdapter } from '../src/next'
 import z from 'zod';
 import { NextRequest } from 'next/server';
-// import { squared } from '../src/index';
 
-test('squared', async () => {
-  class S extends Handler(z.object({ string: z.string() }), z.object({ stringInUpperCase: z.string() })) {
-    async handleLoose(input: { string: string; }): Promise<{ stringInUpperCase: string; }> {
+test('Next adapter', async () => {
+  class S extends Handler(z.object({ string: z.string(), secondString: z.string() }), z.object({ stringInUpperCase: z.string() })) {
+    async handleLoose(input: { string: string; secondString: string }): Promise<{ stringInUpperCase: string; }> {
       return {
-        stringInUpperCase: input.string.toUpperCase()
+        stringInUpperCase: input.string.toUpperCase() + ' ' + input.secondString.toUpperCase()
       }
     }
   }
 
-  const GET = new S().handleWithAdapter(nextAdapter(S)({ string: 'query' }))
+  const NextRoute = new S().handleWithAdapter(nextAdapter(S)({ string: 'query', secondString: 'body' }))
 
-  const data = await GET(new NextRequest('http://localhost.mock.url:3000?string=hello'))
+  const data = await NextRoute(new NextRequest('http://localhost.mock.url:3000?string=hello', {
+    body: JSON.stringify({ secondString: 'world' }),
+    method: 'POST'
+  }))
   const body = await data.json()
-  expect(body).toEqual({stringInUpperCase: 'HELLO'})
+  expect(body).toEqual({stringInUpperCase: 'HELLO WORLD'})
 });
