@@ -6,10 +6,22 @@ export default defineConfig({
       format: 'esm',
       syntax: ['node 18'],
       dts: true,
+      source: {
+        entry: {
+          index: './src/index.ts',
+          next: './src/next.ts'
+        }
+      }
     },
     {
       format: 'cjs',
       syntax: ['node 18'],
+      source: {
+        entry: {
+          index: './src/index.ts',
+          next: './src/next.ts'
+        }
+      }
     },
   ],
 });

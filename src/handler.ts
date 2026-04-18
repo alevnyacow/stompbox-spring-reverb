@@ -7,6 +7,11 @@ enum HandlerErrorCodes {
     INVALID_OUTPUT = 'HANDLER___INVALID_OUTPUT'
 }
 
+export type Adapter<AdapterInput, AdapterOutput, HandlerInputSchema extends ZodType, HandlerOutputSchema extends ZodType> = {
+    input: (x: AdapterInput) => Promise<z.infer<HandlerInputSchema>>,
+    output: (x: z.infer<HandlerOutputSchema>) => Promise<AdapterOutput>
+}
+
 export class HandlerError extends Limiter(HandlerErrorCodes) {}
 
 export const Handler = <Input extends ZodType, Output extends ZodType>(inputSchema: Input, outputSchema: Output) => {
@@ -29,24 +34,17 @@ export const Handler = <Input extends ZodType, Output extends ZodType>(inputSche
             return parsedOutput.data
         }
 
-        handleWithAdapter = <TransformInput, TransformOutput>(adapter: {
-            input: (x: TransformInput) => z.infer<Input>,
-            output: (x: z.infer<Output>) => TransformOutput
-        }) => async (transformedInput: TransformInput): Promise<TransformOutput> => {
-            const input = adapter.input(transformedInput)
-            const result = await this.handle(input)
-            return adapter.output(result)
-        }
+        handleWithAdapter = <TransformInput, TransformOutput>(adapter: Adapter<TransformInput, TransformOutput, Input, Output>) => {
+            return async (transformedInput: TransformInput): Promise<TransformOutput> => { 
+                const input = await adapter.input(transformedInput)
+                const result = await this.handle(input)
+                const mappedResult = await adapter.output(result)
+                return mappedResult
+            }
 
-        handleLooseWithAdapter = <TransformInput, TransformOutput>(adapter: {
-            input: (x: TransformInput) => z.infer<Input>,
-            output: (x: z.infer<Output>) => TransformOutput
-        }) => async (transformedInput: TransformInput): Promise<TransformOutput> => {
-            const input = adapter.input(transformedInput)
-            const result = await this.handleLoose(input)
-            return adapter.output(result)
-        }
+        } 
     }
+    
 
     return HandlerClass
 }
