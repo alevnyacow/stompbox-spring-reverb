@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v1.1.0...v1.2.0) (2026-04-18)
+
+
+### Features
+
+* limiter errors ([73ae0dd](https://github.com/alevnyacow/stompbox-spring-reverb/commit/73ae0dda5b9a51e6d063e56e527e35c4c67aa9ca))
+
 # [1.1.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v1.0.2...v1.1.0) (2026-04-18)
 
 
