@@ -13,22 +13,22 @@ export const Handler = <Input extends ZodType, Output extends ZodType>(inputSche
             return HandlerClass.outputSchema.parse(output)
         }
 
-        handleWithTransform = <TransformInput, TransformOutput>(transformer: {
+        handleWithAdapter = <TransformInput, TransformOutput>(adapter: {
             input: (x: TransformInput) => z.infer<Input>,
             output: (x: z.infer<Output>) => TransformOutput
         }) => async (transformedInput: TransformInput): Promise<TransformOutput> => {
-            const input = transformer.input(transformedInput)
+            const input = adapter.input(transformedInput)
             const result = await this.handle(input)
-            return transformer.output(result)
+            return adapter.output(result)
         }
 
-        handleLooseWithTransform = <TransformInput, TransformOutput>(transformer: {
+        handleLooseWithAdapter = <TransformInput, TransformOutput>(adapter: {
             input: (x: TransformInput) => z.infer<Input>,
             output: (x: z.infer<Output>) => TransformOutput
         }) => async (transformedInput: TransformInput): Promise<TransformOutput> => {
-            const input = transformer.input(transformedInput)
+            const input = adapter.input(transformedInput)
             const result = await this.handleLoose(input)
-            return transformer.output(result)
+            return adapter.output(result)
         }
     }
 
