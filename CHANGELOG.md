@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v1.3.1...v1.3.2) (2026-04-18)
+
+
+### Bug Fixes
+
+* added body parameters check ([5632c3b](https://github.com/alevnyacow/stompbox-spring-reverb/commit/5632c3b196e9172ccb9b5ad0379742b5b1d0af3a))
+
 ## [1.3.1](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v1.3.0...v1.3.1) (2026-04-18)
 
 
