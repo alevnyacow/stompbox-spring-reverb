@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v1.4.0...v1.4.1) (2026-04-18)
+
+
+### Bug Fixes
+
+* unified error names ([58da873](https://github.com/alevnyacow/stompbox-spring-reverb/commit/58da87337147899e90c12620abaa17ad15ae1525))
+
 # [1.4.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v1.3.2...v1.4.0) (2026-04-18)
 
 
