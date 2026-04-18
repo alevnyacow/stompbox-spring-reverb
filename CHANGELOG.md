@@ -1,3 +1,15 @@
+# [2.0.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v1.5.3...v2.0.0) (2026-04-18)
+
+
+### Bug Fixes
+
+* namings ([2c4587a](https://github.com/alevnyacow/stompbox-spring-reverb/commit/2c4587a4400b0fb024dc562f91a09532355fd014))
+
+
+### BREAKING CHANGES
+
+* new contracts
+
 ## [1.5.3](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v1.5.2...v1.5.3) (2026-04-18)
 
 
