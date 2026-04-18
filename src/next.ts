@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import z, { ZodObject, ZodType } from 'zod'
 import { Adapter } from './handler'
-import { Limiter } from '@stompbox/limiter'
+import { Limiter, enrichDetails } from '@stompbox/limiter'
 import { zodErrorDetails } from '@stompbox/limiter/zod'
 
 export type ParametersMapping<InputSchema extends ZodObject> = {
@@ -26,7 +26,7 @@ export class NextAdapterError extends Limiter({
 }) { }
 
 
-export const nextAdapter = <InputSchema extends ZodObject, OutputSchema extends ZodObject>(HandlerClass: { inputSchema: InputSchema, outputSchema: OutputSchema } )=> {
+export const nextAdapter = <InputSchema extends ZodObject, OutputSchema extends ZodObject>(HandlerClass: { inputSchema: InputSchema, outputSchema: OutputSchema, sourceForErrorDetails?: string } )=> {
     return (parametersMapping: ParametersMapping<InputSchema>): Adapter<NextRequest, NextResponse, InputSchema, OutputSchema>  => {
         const inputFromNextRequest = async (request: NextRequest): Promise<z.infer<InputSchema>> => {
             let input: Record<string, any> = {}
@@ -55,7 +55,11 @@ export const nextAdapter = <InputSchema extends ZodObject, OutputSchema extends 
                 const queryParamsParsed = schema.safeParse(queryParamsAsObject);
 
                 if (!queryParamsParsed.success) {
-                    throw new NextAdapterError('INVALID_QUERY_PARAMS', zodErrorDetails(queryParamsParsed.error!))
+                    throw new NextAdapterError('INVALID_QUERY_PARAMS', enrichDetails.withSource(HandlerClass.sourceForErrorDetails)(
+                        enrichDetails.withTimespamp(
+                            zodErrorDetails(queryParamsParsed.error!))
+                        )
+                    )
                 }
 
                 input = { ...input, ...queryParamsParsed.data }
@@ -80,7 +84,11 @@ export const nextAdapter = <InputSchema extends ZodObject, OutputSchema extends 
                 }
                 const bodyParsed = schema.safeParse(body)
                 if (!bodyParsed.success) {
-                    throw new NextAdapterError('INVALID_BODY_PAYLOAD', zodErrorDetails(bodyParsed.error!))
+                    throw new NextAdapterError('INVALID_BODY_PAYLOAD', enrichDetails.withSource(HandlerClass.sourceForErrorDetails)(
+                        enrichDetails.withTimespamp(
+                            zodErrorDetails(bodyParsed.error!))
+                        )
+                    )
                 }
 
                 input = {...input, ...bodyParsed.data}

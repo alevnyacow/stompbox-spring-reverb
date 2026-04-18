@@ -1,5 +1,5 @@
 import z, { ZodType } from "zod";
-import { Limiter } from '@stompbox/limiter'
+import { Limiter, enrichDetails } from '@stompbox/limiter'
 import { zodErrorDetails } from '@stompbox/limiter/zod'
 
 enum HandlerErrorCodes {
@@ -14,22 +14,31 @@ export type Adapter<AdapterInput, AdapterOutput, HandlerInputSchema extends ZodT
 
 export class HandlerError extends Limiter(HandlerErrorCodes) {}
 
-export const Handler = <Input extends ZodType, Output extends ZodType>(inputSchema: Input, outputSchema: Output) => {
+export const Handler = <Input extends ZodType, Output extends ZodType>(inputSchema: Input, outputSchema: Output, sourceForErrorDetails?: string) => {
     abstract class HandlerClass {
         public static inputSchema = inputSchema
         public static outputSchema = outputSchema
+        public static sourceForErrorDetails = sourceForErrorDetails
 
         abstract handleLoose(input: z.infer<Input>): Promise<z.infer<Output>>
 
         handle = async (input: z.infer<Input>): Promise<z.infer<Output>> => {
             const parsedInput = HandlerClass.inputSchema.safeParse(input)
             if (!parsedInput.success) {
-                throw new HandlerError('INVALID_INPUT', zodErrorDetails(parsedInput.error))
+                throw new HandlerError('INVALID_INPUT', enrichDetails.withSource(sourceForErrorDetails)(
+                    enrichDetails.withTimespamp(
+                        zodErrorDetails(parsedInput.error)
+                    )
+                ))
             }
             const output = await this.handleLoose(parsedInput.data)
             const parsedOutput = HandlerClass.outputSchema.safeParse(output)
             if (!parsedOutput.success) {
-                throw new HandlerError('INVALID_OUTPUT', zodErrorDetails(parsedOutput.error))
+                throw new HandlerError('INVALID_OUTPUT', enrichDetails.withSource(sourceForErrorDetails)(
+                    enrichDetails.withTimespamp(
+                        zodErrorDetails(parsedOutput.error))
+                    )
+                )
             }
             return parsedOutput.data
         }
