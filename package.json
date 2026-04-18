@@ -1,6 +1,6 @@
 {
   "name": "@stompbox/spring-reverb",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "Framework-agnostic plug-and-play handlers with adapters.",
   "repository": {
     "type": "git",
