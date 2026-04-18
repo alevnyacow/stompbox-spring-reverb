@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v1.3.2...v1.4.0) (2026-04-18)
+
+
+### Features
+
+* added limiter errors, exported NextAdapterError ([48f3917](https://github.com/alevnyacow/stompbox-spring-reverb/commit/48f3917df80ef15f513cc4b8c5e09b170339e6ab))
+
 ## [1.3.2](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v1.3.1...v1.3.2) (2026-04-18)
 
 
