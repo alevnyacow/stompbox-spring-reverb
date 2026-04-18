@@ -11,7 +11,7 @@
     "domain driven design",
     "next"
   ],
-  "description": "Framework-agnostic plug-and-play handlers / use cases with built-in adapters (including Next API routes).",
+  "description": "Framework-agnostic plug-and-play use cases with built-in adapters (including Next API routes).",
   "repository": {
     "type": "git",
     "url": "https://github.com/alevnyacow/stompbox-spring-reverb.git"

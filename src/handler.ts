@@ -14,15 +14,15 @@ export type Adapter<AdapterInput, AdapterOutput, HandlerInputSchema extends ZodT
 
 export class HandlerError extends Limiter(HandlerErrorCodes) {}
 
-export const Handler = <Input extends ZodType, Output extends ZodType>(inputSchema: Input, outputSchema: Output, sourceForErrorDetails?: string) => {
+export const UseCase = <Input extends ZodType, Output extends ZodType>(inputSchema: Input, outputSchema: Output, sourceForErrorDetails?: string) => {
     abstract class HandlerClass {
         public static inputSchema = inputSchema
         public static outputSchema = outputSchema
         public static sourceForErrorDetails = sourceForErrorDetails
 
-        abstract handleLoose(input: z.infer<Input>): Promise<z.infer<Output>>
+        abstract executeRaw(input: z.infer<Input>): Promise<z.infer<Output>>
 
-        handle = async (input: z.infer<Input>): Promise<z.infer<Output>> => {
+        execute = async (input: z.infer<Input>): Promise<z.infer<Output>> => {
             const parsedInput = HandlerClass.inputSchema.safeParse(input)
             if (!parsedInput.success) {
                 throw new HandlerError('INVALID_INPUT', enrichDetails.withSource(sourceForErrorDetails)(
@@ -31,7 +31,7 @@ export const Handler = <Input extends ZodType, Output extends ZodType>(inputSche
                     )
                 ))
             }
-            const output = await this.handleLoose(parsedInput.data)
+            const output = await this.executeRaw(parsedInput.data)
             const parsedOutput = HandlerClass.outputSchema.safeParse(output)
             if (!parsedOutput.success) {
                 throw new HandlerError('INVALID_OUTPUT', enrichDetails.withSource(sourceForErrorDetails)(
@@ -43,14 +43,13 @@ export const Handler = <Input extends ZodType, Output extends ZodType>(inputSche
             return parsedOutput.data
         }
 
-        handleWithAdapter = <TransformInput, TransformOutput>(adapter: Adapter<TransformInput, TransformOutput, Input, Output>) => {
+        withAdapter = <TransformInput, TransformOutput>(adapter: Adapter<TransformInput, TransformOutput, Input, Output>) => {
             return async (transformedInput: TransformInput): Promise<TransformOutput> => { 
                 const input = await adapter.input(transformedInput)
-                const result = await this.handle(input)
+                const result = await this.execute(input)
                 const mappedResult = await adapter.output(result)
                 return mappedResult
             }
-
         } 
     }
     

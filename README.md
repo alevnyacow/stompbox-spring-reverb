@@ -1,13 +1,13 @@
 # Spring Reverb
 
-Framework-agnostic plug-and-play handlers / use cases with built-in adapters (including Next API routes).
+Framework-agnostic plug-and-play use cases with built-in adapters (including Next API routes).
 
 ## Example
 
-### Creating a handler
+### Creating a use case
 
 ```ts
-import { Handler } from '@stompbox/spring-reverb'
+import { UseCase } from '@stompbox/spring-reverb'
 import z from 'zod'
 
 const inputSchema = z.object({ 
@@ -19,14 +19,16 @@ const outputSchema = z.object({
     greetingText: z.string() 
 })
 
-class GreetingUseCase extends Handler(
+class GreetingUseCase extends UseCase(
     inputSchema,
     outputSchema
 ) {
     // strongly-typed, with autocompletion
-    async handleLoose(
+    async executeRaw(
         input: { firstName: string; lastName: string }
     ): Promise<{ greetingText: string; }> {
+        const { firstName, lastName } = input
+
         return { 
             greetingText: `Hello, ${firstName} ${lastName}!` 
         }
@@ -35,9 +37,9 @@ class GreetingUseCase extends Handler(
 
 const greetingUseCase = new GreetingUseCase()
 
-const { greetingText } = await greetingUseCase.handle({
+const { greetingText } = await greetingUseCase.execute({
     firstName: 'Player',
-    secondName: 'one'
+    lastName: 'one'
 })
 ```
 
@@ -52,17 +54,17 @@ import { GreetingUseCase } from '@/use-cases'
 const adapter = nextAdapter(GreetingUseCase)({
     // strongly-typed, with autocompletion
     firstName: 'query',
-    secondName: 'body'
+    lastName: 'body'
 })
 
 const greetingUseCase = new GreetingUseCase()
 
-export const PUT = greetingUseCase.handleWithAdapter(
+export const PUT = greetingUseCase.withAdapter(
     adapter
 )
 
 /**
  * PUT /api/some/path?firstName=Player 
- * Body: { secondName: 'one' } 
+ * Body: { lastName: 'one' } 
  */ 
 ```
