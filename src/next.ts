@@ -17,6 +17,7 @@ export const nextAdapter = <InputSchema extends ZodObject, OutputSchema extends 
             const queryParameters = Object.entries(parametersMapping)
                 .filter(([, x]) => x === 'query' || x.source === 'query') as [string, 'query' | { customSchema: ZodType }][] 
 
+
             if (queryParameters.length) {
                 const queryParamsAsObject = Object.fromEntries(
                     request.nextUrl.searchParams.entries()
@@ -28,15 +29,16 @@ export const nextAdapter = <InputSchema extends ZodObject, OutputSchema extends 
                     const [field, rule] = entry
                     if (rule === 'query') {
                         // @ts-expect-error
-                        schema.extend(HandlerClass.inputSchema.pick({ [field]: true }).shape)
+                        schema = schema.extend(HandlerClass.inputSchema.pick({ [field]: true }).shape)
                     }
                     if (typeof rule === 'object' && rule && 'customSchema' in rule) {
-                        schema.extend({ [field]: rule.customSchema })
+                        schema = schema.extend({ [field]: rule.customSchema })
                     }
                 }
 
                 const queryParamsParsed = schema.safeParse(queryParamsAsObject);
-                input = { ...input, ...queryParamsParsed }
+
+                input = { ...input, ...queryParamsParsed.data }
             }
 
             const bodyEntries = Object.entries(
@@ -50,14 +52,14 @@ export const nextAdapter = <InputSchema extends ZodObject, OutputSchema extends 
                     const [field, rule] = bodyEntry
                     if (rule === 'body') {
                         // @ts-expect-error
-                        schema.extend(HandlerClass.inputSchema.pick({ [field]: true }).shape)
+                        schema = schema.extend(HandlerClass.inputSchema.pick({ [field]: true }).shape)
                     }
                     if (typeof rule === 'object' && rule && 'customSchema' in rule) {
-                        schema.extend({ [field]: rule.customSchema })
+                        schema = schema.extend({ [field]: rule.customSchema })
                     }
                 }
-                const bodyParsed = schema.parse(body)
-                input = {...input, ...bodyParsed}
+                const bodyParsed = schema.safeParse(body)
+                input = {...input, ...bodyParsed.data}
             }
 
             return input as z.infer<InputSchema>
