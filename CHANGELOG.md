@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v1.3.0...v1.3.1) (2026-04-18)
+
+
+### Bug Fixes
+
+* adapter, test ([92fafa6](https://github.com/alevnyacow/stompbox-spring-reverb/commit/92fafa67771b67892bb8563888c5cdb75caa1554))
+
 # [1.3.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v1.2.0...v1.3.0) (2026-04-18)
 
 
