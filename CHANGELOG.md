@@ -1,3 +1,10 @@
+## [1.5.3](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v1.5.2...v1.5.3) (2026-04-18)
+
+
+### Bug Fixes
+
+* description ([b955077](https://github.com/alevnyacow/stompbox-spring-reverb/commit/b955077d87ae38f65b5e9822b7bec2c3bac22daf))
+
 ## [1.5.2](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v1.5.1...v1.5.2) (2026-04-18)
 
 
