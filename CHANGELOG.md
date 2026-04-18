@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v1.2.0...v1.3.0) (2026-04-18)
+
+
+### Features
+
+* experimental zod adapter ([16fc27f](https://github.com/alevnyacow/stompbox-spring-reverb/commit/16fc27ff5a79024f2bff179d1d923b24e3ec1a11))
+
 # [1.2.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v1.1.0...v1.2.0) (2026-04-18)
 
 
