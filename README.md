@@ -1,23 +1,68 @@
-# Rslib project
+# Spring Reverb
 
-## Setup
+Framework-agnostic plug-and-play handlers with adapters.
 
-Install the dependencies:
+## Example
 
-```bash
-npm install
+### Creating a handler
+
+```ts
+import { Handler } from '@stompbox/spring-reverb'
+import z from 'zod'
+
+const inputSchema = z.object({ 
+    firstName: z.string(), 
+    lastName: z.string() 
+})
+
+const outputSchema = z.object({ 
+    greetingText: z.string() 
+})
+
+class GreetingUseCase extends Handler(
+    inputSchema,
+    outputSchema
+) {
+    // strongly-typed, with autocompletion
+    async handleLoose(
+        input: { firstName: string; lastName: string }
+    ): Promise<{ greetingText: string; }> {
+        return { 
+            greetingText: `Hello, ${firstName} ${lastName}!` 
+        }
+    }
+}
+
+const greetingUseCase = new GreetingUseCase()
+
+const { greetingText } = await greetingUseCase.handle({
+    firstName: 'Player',
+    secondName: 'one'
+})
 ```
 
-## Get started
+### Usage with Next
 
-Build the library:
+```ts
+// app/api/some/path/route.ts
 
-```bash
-npm run build
-```
+import { nextAdapter } from '@stompbox/spring-reverb/next'
+import { GreetingUseCase } from '@/use-cases'
 
-Build the library in watch mode:
+const adapter = nextAdapter(GreetingUseCase)({
+    // strongly-typed, with autocompletion
+    firstName: 'query',
+    secondName: 'body'
+})
 
-```bash
-npm run dev
+const greetingUseCase = new GreetingUseCase()
+
+export const PUT = greetingUseCase.handleWithAdapter(
+    adapter
+)
+
+/**
+ * PUT /api/some/path?firstName=Player 
+ * Body: { secondName: 'one' } 
+ */ 
 ```
