@@ -1,3 +1,10 @@
+# [2.2.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v2.1.3...v2.2.0) (2026-04-19)
+
+
+### Features
+
+* createUseCase, refactored error name ([b2fe837](https://github.com/alevnyacow/stompbox-spring-reverb/commit/b2fe8370043903561afa0d4215c8af949e407280))
+
 ## [2.1.3](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v2.1.2...v2.1.3) (2026-04-19)
 
 
