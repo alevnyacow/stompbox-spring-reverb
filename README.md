@@ -1,6 +1,6 @@
 # Spring Reverb
 
-Framework-agnostic plug-and-play use cases with built-in adapters (including Next API routes).
+Framework-agnostic plug-and-play use cases with built-in adapters (including Next and Express).
 
 ## Example
 
@@ -66,5 +66,31 @@ export const PUT = greetingUseCase.withAdapter(
 /**
  * PUT /api/some/path?firstName=Player 
  * Body: { lastName: 'one' } 
+ * 
+ * => { greetingText: 'Hello, Player one!' }
+ */ 
+```
+
+### Usage with Express
+
+```ts
+const adapter = expressAdapter(GreetingUseCase)({
+    firstName: 'query',
+    lastName: 'body',
+});
+
+const greetingUseCase = new GreetingUseCase();
+
+app.put('/greet', (req, res) =>
+    greetingUseCase.withAdapter(adapter)(
+        { req, res }
+    )
+);
+
+/**
+ * PUT /greet?firstName=Player 
+ * Body: { lastName: 'one' } 
+ * 
+ * => { greetingText: 'Hello, Player one!' }
  */ 
 ```
