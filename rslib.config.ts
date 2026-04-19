@@ -9,7 +9,8 @@ export default defineConfig({
       source: {
         entry: {
           index: './src/index.ts',
-          next: './src/next.ts'
+          next: './src/next.ts',
+          express: './src/express.ts'
         }
       }
     },
@@ -19,7 +20,8 @@ export default defineConfig({
       source: {
         entry: {
           index: './src/index.ts',
-          next: './src/next.ts'
+          next: './src/next.ts',
+          express: './src/express.ts'
         }
       }
     },

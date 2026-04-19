@@ -3,13 +3,7 @@ import z, { ZodObject, ZodType } from 'zod'
 import { Adapter } from './handler'
 import { Limiter, enrichDetails } from '@stompbox/limiter'
 import { zodErrorDetails } from '@stompbox/limiter/zod'
-
-export type ParametersMapping<InputSchema extends ZodObject> = {
-    [k in keyof InputSchema['shape']]: 'body' | 'query' | {
-        source: 'body' | 'query',
-        customSchema: InputSchema['shape'][k]
-    }
-}
+import { ParametersMapping } from './api-adapter-types'
 
 const nextAdapterDefaultErrors = {
     INVALID_QUERY_PARAMS: 'SPRING-REVERB___NEXT-ADAPTER-INVALID-QUERY-PARAMS',
@@ -26,7 +20,7 @@ export class NextAdapterError extends Limiter({
 }) { }
 
 
-export const nextAdapter = <InputSchema extends ZodObject, OutputSchema extends ZodObject>(HandlerClass: { inputSchema: InputSchema, outputSchema: OutputSchema, sourceForErrorDetails?: string } )=> {
+export const nextAdapter = <InputSchema extends ZodObject, OutputSchema extends ZodObject>(HandlerClass: { inputSchema: InputSchema, outputSchema: OutputSchema, sourceForErrorDetails?: string })=> {
     return (parametersMapping: ParametersMapping<InputSchema>): Adapter<NextRequest, NextResponse, InputSchema, OutputSchema>  => {
         const inputFromNextRequest = async (request: NextRequest): Promise<z.infer<InputSchema>> => {
             let input: Record<string, any> = {}

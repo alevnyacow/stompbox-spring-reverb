@@ -9,7 +9,7 @@ enum HandlerErrorCodes {
 
 export type Adapter<AdapterInput, AdapterOutput, HandlerInputSchema extends ZodType, HandlerOutputSchema extends ZodType> = {
     input: (x: AdapterInput) => Promise<z.infer<HandlerInputSchema>>,
-    output: (x: z.infer<HandlerOutputSchema>) => Promise<AdapterOutput>
+    output: (x: z.infer<HandlerOutputSchema>, adapterInput: AdapterInput) => Promise<AdapterOutput>
 }
 
 export class HandlerError extends Limiter(HandlerErrorCodes) {}
@@ -47,12 +47,11 @@ export const UseCase = <Input extends ZodType, Output extends ZodType>(inputSche
             return async (transformedInput: TransformInput): Promise<TransformOutput> => { 
                 const input = await adapter.input(transformedInput)
                 const result = await this.execute(input)
-                const mappedResult = await adapter.output(result)
+                const mappedResult = await adapter.output(result, transformedInput)
                 return mappedResult
             }
         } 
     }
     
-
     return HandlerClass
 }
