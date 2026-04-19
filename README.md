@@ -1,43 +1,34 @@
 # Spring Reverb
 
-Framework-agnostic plug-and-play use cases with built-in adapters (including Next and Express).
+Framework-agnostic plug-and-play use cases with built-in adapters for Next and Express.
 
 ## Example
 
 ### Creating a use case
 
 ```ts
-import { UseCase } from '@stompbox/spring-reverb'
+import { createUseCase } from '@stompbox/spring-reverb'
 import z from 'zod'
 
-const inputSchema = z.object({ 
-    firstName: z.string(), 
-    lastName: z.string() 
-})
-
-const outputSchema = z.object({ 
-    greetingText: z.string() 
-})
-
-class GreetingUseCase extends UseCase(
-    inputSchema,
-    outputSchema
-) {
-    // strongly-typed, with autocompletion
-    async executeRaw(
-        input: { firstName: string; lastName: string }
-    ): Promise<{ greetingText: string; }> {
-        const { firstName, lastName } = input
-
-        return { 
-            greetingText: `Hello, ${firstName} ${lastName}!` 
+export const greet = createUseCase(
+    // input schema
+    z.object({
+        firstName: z.string(), 
+        lastName: z.string() 
+    }),
+    // output schema
+    z.object({ 
+        greetingText: z.string() 
+    }),
+    // strongly-typed handler
+    async ({ firstName, lastName }) => {
+        return {
+            greetingText: `Hello, ${firstName} ${lastName}!`
         }
     }
-}
+)
 
-const greetingUseCase = new GreetingUseCase()
-
-const { greetingText } = await greetingUseCase.execute({
+const { greetingText } = await greet.execute({
     firstName: 'Player',
     lastName: 'one'
 })
@@ -49,19 +40,15 @@ const { greetingText } = await greetingUseCase.execute({
 // app/api/some/path/route.ts
 
 import { nextAdapter } from '@stompbox/spring-reverb/next'
-import { GreetingUseCase } from '@/use-cases'
+import { greet } from '@/use-cases'
 
-const adapter = nextAdapter(GreetingUseCase)({
+const adapter = nextAdapter(greet)({
     // strongly-typed, with autocompletion
     firstName: 'query',
     lastName: 'body'
 })
 
-const greetingUseCase = new GreetingUseCase()
-
-export const PUT = greetingUseCase.withAdapter(
-    adapter
-)
+export const PUT = greet.withAdapter(adapter)
 
 /**
  * PUT /api/some/path?firstName=Player 
@@ -75,21 +62,17 @@ export const PUT = greetingUseCase.withAdapter(
 
 ```ts
 import { nextAdapter } from '@stompbox/spring-reverb/next'
-import { GreetingUseCase } from '@/use-cases'
+import { greet } from '@/use-cases'
 
-const adapter = expressAdapter(GreetingUseCase)({
+const adapter = expressAdapter(greet)({
     // strongly-typed, with autocompletion
     firstName: 'query',
     lastName: 'body',
 });
 
-const greetingUseCase = new GreetingUseCase();
-
-app.put('/greet', (req, res) =>
-    greetingUseCase.withAdapter(adapter)(
-        { req, res }
-    )
-);
+app.put('/greet', (req, res) => {
+    greet.withAdapter(adapter)({ req, res })
+});
 
 /**
  * PUT /greet?firstName=Player 
