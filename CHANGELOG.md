@@ -1,3 +1,10 @@
+## [2.2.1](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v2.2.0...v2.2.1) (2026-04-19)
+
+
+### Bug Fixes
+
+* adapters can work with instances too ([e3c87e1](https://github.com/alevnyacow/stompbox-spring-reverb/commit/e3c87e133cb90d86aafb602af14f7df723c206d7))
+
 # [2.2.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v2.1.3...v2.2.0) (2026-04-19)
 
 
