@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v2.0.0...v2.1.0) (2026-04-19)
+
+
+### Features
+
+* experimental express adapter ([6c6f943](https://github.com/alevnyacow/stompbox-spring-reverb/commit/6c6f943857651fce5ab627fdfe2c6867b6b5b136))
+
 # [2.0.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v1.5.3...v2.0.0) (2026-04-18)
 
 
