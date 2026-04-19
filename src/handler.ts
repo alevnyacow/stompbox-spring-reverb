@@ -33,6 +33,10 @@ export const UseCase = <Input extends ZodType, Output extends ZodType>(inputSche
         public static outputSchema = outputSchema
         public static sourceForErrorDetails = sourceForErrorDetails
 
+        public inputSchema = inputSchema
+        public outputSchema = outputSchema
+        public sourceForErrorDetails = sourceForErrorDetails
+
         abstract executeRaw(input: z.infer<Input>): Promise<z.infer<Output>>
 
         execute = async (input: z.infer<Input>): Promise<z.infer<Output>> => {

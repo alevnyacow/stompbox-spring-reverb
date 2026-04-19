@@ -17,12 +17,13 @@ class UpperCaseHandler extends UseCase(z.object({ string: z.string(), secondStri
 
 test('Express adapter', async () => {
   const app = express();
-  const adapter = expressAdapter(UpperCaseHandler)({
+  
+  const handler = new UpperCaseHandler();
+
+  const adapter = expressAdapter(handler)({
     secondString: 'query',
     string: 'query',
   });
-
-  const handler = new UpperCaseHandler();
 
   app.get('/', (req, res) =>
     handler.withAdapter(adapter)({ req, res })
