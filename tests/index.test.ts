@@ -1,18 +1,51 @@
 import { expect, test } from '@rstest/core';
 import { UseCase } from '../src/handler'
-import { nextAdapter } from '../src/next'
 import z from 'zod';
 import { NextRequest } from 'next/server';
+import { nextAdapter } from '../src/next'
+import express from 'express'
+import { expressAdapter } from '../src/express'
 
-test('Next adapter', async () => {
-  class UpperCaseHandler extends UseCase(z.object({ string: z.string(), secondString: z.string() }), z.object({ stringInUpperCase: z.string() })) {
-    async executeRaw(input: { string: string; secondString: string }): Promise<{ stringInUpperCase: string; }> {
-      return {
-        stringInUpperCase: input.string.toUpperCase() + ' ' + input.secondString.toUpperCase()
-      }
+
+class UpperCaseHandler extends UseCase(z.object({ string: z.string(), secondString: z.string() }), z.object({ stringInUpperCase: z.string() })) {
+  async executeRaw(input: { string: string; secondString: string }): Promise<{ stringInUpperCase: string; }> {
+    return {
+      stringInUpperCase: input.string.toUpperCase() + ' ' + input.secondString.toUpperCase()
     }
   }
+}
 
+test('Express adapter', async () => {
+  const app = express();
+  const adapter = expressAdapter(UpperCaseHandler)({
+    secondString: 'query',
+    string: 'query',
+  });
+
+  const handler = new UpperCaseHandler();
+
+  app.get('/', (req, res) =>
+    handler.withAdapter(adapter)({ req, res })
+  );
+
+  const server = await new Promise<ReturnType<typeof app.listen>>((resolve) => {
+    const s = app.listen(0, () => resolve(s));
+  });
+
+  const port = (server.address() as any).port;
+
+  const result = await fetch(
+    `http://localhost:${port}?string=hello&secondString=world`
+  );
+
+  const json = await result.json();
+
+  expect(json).toEqual({ stringInUpperCase: 'HELLO WORLD' })
+
+  server.close();
+});
+
+test('Next adapter', async () => {
   const adapter = nextAdapter(UpperCaseHandler)({ string: 'query', secondString: 'body' })
   const handler = new UpperCaseHandler()
   const NextRoute = handler.withAdapter(adapter)
