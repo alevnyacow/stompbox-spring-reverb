@@ -74,7 +74,11 @@ export const PUT = greetingUseCase.withAdapter(
 ### Usage with Express
 
 ```ts
+import { nextAdapter } from '@stompbox/spring-reverb/next'
+import { GreetingUseCase } from '@/use-cases'
+
 const adapter = expressAdapter(GreetingUseCase)({
+    // strongly-typed, with autocompletion
     firstName: 'query',
     lastName: 'body',
 });
