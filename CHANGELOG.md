@@ -1,3 +1,10 @@
+## [2.1.3](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v2.1.2...v2.1.3) (2026-04-19)
+
+
+### Bug Fixes
+
+* added imports in Express readme example ([714515c](https://github.com/alevnyacow/stompbox-spring-reverb/commit/714515c2ab964656aa6a110018efe174ff6ae3b4))
+
 ## [2.1.2](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v2.1.1...v2.1.2) (2026-04-19)
 
 
