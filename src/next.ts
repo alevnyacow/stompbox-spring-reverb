@@ -91,13 +91,14 @@ export const nextAdapter = <InputSchema extends ZodObject, OutputSchema extends 
             return input as z.infer<InputSchema>
         }
 
-        const outputToNextRequest = async (output: z.infer<OutputSchema>): Promise<NextResponse> => {
-            return NextResponse.json(output)
-        }
-
         return {
             input: inputFromNextRequest,
-            output: outputToNextRequest
+            output: async (x) => {
+                if (!x.failed) {
+                    return NextResponse.json(x.output)
+                }
+                return NextResponse.json(x.error, { status: 500 })
+            }
         }
     }
 }

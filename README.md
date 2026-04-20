@@ -1,16 +1,16 @@
 # Spring Reverb
 
-Framework-agnostic plug-and-play use cases with built-in adapters for Next and Express.
+Framework-agnostic plug-and-play handlers with built-in adapters for Next and Express.
 
 ## Example
 
-### Creating a use case
+### Creating a handler
 
 ```ts
-import { createUseCase } from '@stompbox/spring-reverb'
+import { handler } from '@stompbox/spring-reverb'
 import z from 'zod'
 
-export const greet = createUseCase(
+export const greet = handler(
     // input schema
     z.object({
         firstName: z.string(), 
@@ -28,10 +28,16 @@ export const greet = createUseCase(
     }
 )
 
-const { greetingText } = await greet.execute({
+const result = await greet.execute({
     firstName: 'Player',
     lastName: 'one'
 })
+
+if (!result.failed) {
+    console.log(result.output)
+} else {
+    console.error(result.error)
+}
 ```
 
 ### Usage with Next

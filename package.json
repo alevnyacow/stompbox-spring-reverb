@@ -12,7 +12,7 @@
     "next",
     "express"
   ],
-  "description": "Framework-agnostic plug-and-play use cases with built-in adapters for Next and Express.",
+  "description": "Framework-agnostic plug-and-play handlers with built-in adapters for Next and Express.",
   "repository": {
     "type": "git",
     "url": "https://github.com/alevnyacow/stompbox-spring-reverb.git"
@@ -64,7 +64,7 @@
     "typescript": "^6.0.2"
   },
   "dependencies": {
-    "@stompbox/limiter": "^4.6.0",
+    "@stompbox/limiter": "^4.8.1",
     "zod": "^4.3.6"
   },
   "peerDependencies": {

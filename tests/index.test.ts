@@ -1,5 +1,5 @@
 import { expect, test } from '@rstest/core';
-import { UseCase } from '../src/handler'
+import { Handler } from '../src/handler'
 import z from 'zod';
 import { NextRequest } from 'next/server';
 import { nextAdapter } from '../src/next'
@@ -7,7 +7,7 @@ import express from 'express'
 import { expressAdapter } from '../src/express'
 
 
-class UpperCaseHandler extends UseCase(z.object({ string: z.string(), secondString: z.string() }), z.object({ stringInUpperCase: z.string() })) {
+class UpperCaseHandler extends Handler(z.object({ string: z.string(), secondString: z.string() }), z.object({ stringInUpperCase: z.string() })) {
   async executeRaw(input: { string: string; secondString: string }): Promise<{ stringInUpperCase: string; }> {
     return {
       stringInUpperCase: input.string.toUpperCase() + ' ' + input.secondString.toUpperCase()
