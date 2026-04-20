@@ -1,3 +1,15 @@
+# [4.0.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v3.0.0...v4.0.0) (2026-04-20)
+
+
+### Features
+
+* total refactoring, simplified next and express adapters ([3219770](https://github.com/alevnyacow/stompbox-spring-reverb/commit/3219770b3ea485438603ec833615d750db5d8fa1))
+
+
+### BREAKING CHANGES
+
+* new contracts
+
 # [3.0.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v2.2.2...v3.0.0) (2026-04-20)
 
 
