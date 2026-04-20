@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import z, { ZodObject, ZodType } from 'zod'
-import { Adapter } from './handler'
+import { Adapter, Handler, withAdapter } from './handler'
 import { Limiter, enrichDetails } from '@stompbox/limiter'
 import { zodErrorDetails } from '@stompbox/limiter/zod'
 import { ParametersMapping } from './api-adapter-types'
@@ -19,10 +19,12 @@ export class NextAdapterError extends Limiter({
     ...nextAdapterErrors 
 }) { }
 
-
-export const nextAdapter = <InputSchema extends ZodObject, OutputSchema extends ZodObject>(HandlerClass: { inputSchema: InputSchema, outputSchema: OutputSchema, sourceForErrorDetails?: string })=> {
-    return (parametersMapping: ParametersMapping<InputSchema>): Adapter<NextRequest, NextResponse, InputSchema, OutputSchema>  => {
-        const inputFromNextRequest = async (request: NextRequest): Promise<z.infer<InputSchema>> => {
+export const withNextAdapter = <InputSchema extends ZodObject, OutputSchema extends ZodObject>(
+    handler: Handler<InputSchema, OutputSchema>,
+    parametersMapping: ParametersMapping<InputSchema>
+) => {
+    const adapter: Adapter<[request: NextRequest], NextResponse, InputSchema, OutputSchema> = {
+        input: async (request: NextRequest): Promise<z.infer<InputSchema>> => {
             let input: Record<string, any> = {}
 
             const queryParameters = Object.entries(parametersMapping)
@@ -39,7 +41,7 @@ export const nextAdapter = <InputSchema extends ZodObject, OutputSchema extends 
                     const [field, rule] = entry
                     if (rule === 'query') {
                         // @ts-expect-error
-                        schema = schema.extend(HandlerClass.inputSchema.pick({ [field]: true }).shape)
+                        schema = schema.extend(handler.inputSchema.pick({ [field]: true }).shape)
                     }
                     if (typeof rule === 'object' && rule && 'customSchema' in rule) {
                         schema = schema.extend({ [field]: rule.customSchema })
@@ -49,7 +51,7 @@ export const nextAdapter = <InputSchema extends ZodObject, OutputSchema extends 
                 const queryParamsParsed = schema.safeParse(queryParamsAsObject);
 
                 if (!queryParamsParsed.success) {
-                    throw new NextAdapterError('INVALID_QUERY_PARAMS', enrichDetails.withSource(HandlerClass.sourceForErrorDetails)(
+                    throw new NextAdapterError('INVALID_QUERY_PARAMS', enrichDetails.withSource(handler.sourceForErrorDetails)(
                         enrichDetails.withTimespamp(
                             zodErrorDetails(queryParamsParsed.error!))
                         )
@@ -70,7 +72,7 @@ export const nextAdapter = <InputSchema extends ZodObject, OutputSchema extends 
                     const [field, rule] = bodyEntry
                     if (rule === 'body') {
                         // @ts-expect-error
-                        schema = schema.extend(HandlerClass.inputSchema.pick({ [field]: true }).shape)
+                        schema = schema.extend(handler.inputSchema.pick({ [field]: true }).shape)
                     }
                     if (typeof rule === 'object' && rule && 'customSchema' in rule) {
                         schema = schema.extend({ [field]: rule.customSchema })
@@ -78,7 +80,7 @@ export const nextAdapter = <InputSchema extends ZodObject, OutputSchema extends 
                 }
                 const bodyParsed = schema.safeParse(body)
                 if (!bodyParsed.success) {
-                    throw new NextAdapterError('INVALID_BODY_PAYLOAD', enrichDetails.withSource(HandlerClass.sourceForErrorDetails)(
+                    throw new NextAdapterError('INVALID_BODY_PAYLOAD', enrichDetails.withSource(handler.sourceForErrorDetails)(
                         enrichDetails.withTimespamp(
                             zodErrorDetails(bodyParsed.error!))
                         )
@@ -89,17 +91,15 @@ export const nextAdapter = <InputSchema extends ZodObject, OutputSchema extends 
             }
 
             return input as z.infer<InputSchema>
-        }
-
-        return {
-            input: inputFromNextRequest,
-            output: async (x) => {
-                if (!x.failed) {
-                    return NextResponse.json(x.output)
-                }
-                return NextResponse.json(x.error, { status: 500 })
+        },
+        output: async (x) => {
+            if (!x.failed) {
+                return NextResponse.json(x.output)
             }
+            return NextResponse.json(x.error, { status: 500 })
         }
     }
+
+    return withAdapter(handler, adapter)
 }
 

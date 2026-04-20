@@ -1,33 +1,24 @@
 import { expect, test } from '@rstest/core';
-import { Handler } from '../src/handler'
+import { springReverb, withAdapter } from '../src/handler'
 import z from 'zod';
 import { NextRequest } from 'next/server';
-import { nextAdapter } from '../src/next'
+import { withNextAdapter } from '../src/next'
 import express from 'express'
-import { expressAdapter } from '../src/express'
+import { withExpressAdapter } from '../src/express'
 
-
-class UpperCaseHandler extends Handler(z.object({ string: z.string(), secondString: z.string() }), z.object({ stringInUpperCase: z.string() })) {
-  async executeRaw(input: { string: string; secondString: string }): Promise<{ stringInUpperCase: string; }> {
-    return {
-      stringInUpperCase: input.string.toUpperCase() + ' ' + input.secondString.toUpperCase()
-    }
-  }
-}
+const handler = springReverb(
+  z.object({ string: z.string(), secondString: z.string() }),
+  z.object({ stringInUpperCase: z.string() }),
+  async (x) => ({ stringInUpperCase: `${x.string.toUpperCase()} ${x.secondString.toUpperCase()}` })
+)
 
 test('Express adapter', async () => {
   const app = express();
   
-  const handler = new UpperCaseHandler();
-
-  const adapter = expressAdapter(handler)({
+  app.get('/', withExpressAdapter(handler, {
     secondString: 'query',
-    string: 'query',
-  });
-
-  app.get('/', (req, res) =>
-    handler.withAdapter(adapter)({ req, res })
-  );
+    string: 'query'
+  }));
 
   const server = await new Promise<ReturnType<typeof app.listen>>((resolve) => {
     const s = app.listen(0, () => resolve(s));
@@ -47,9 +38,7 @@ test('Express adapter', async () => {
 });
 
 test('Next adapter', async () => {
-  const adapter = nextAdapter(UpperCaseHandler)({ string: 'query', secondString: 'body' })
-  const handler = new UpperCaseHandler()
-  const NextRoute = handler.withAdapter(adapter)
+  const NextRoute = withNextAdapter(handler, { string: 'query', secondString: 'body' })
 
   const data = await NextRoute(new NextRequest('http://localhost.mock.url:3000?string=hello', {
     body: JSON.stringify({ secondString: 'world' }),

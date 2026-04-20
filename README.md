@@ -7,10 +7,10 @@ Framework-agnostic plug-and-play handlers with built-in adapters for Next and Ex
 ### Creating a handler
 
 ```ts
-import { handler } from '@stompbox/spring-reverb'
+import { springReverb } from '@stompbox/spring-reverb'
 import z from 'zod'
 
-export const greet = handler(
+export const greet = springReverb(
     // input schema
     z.object({
         firstName: z.string(), 
@@ -28,15 +28,29 @@ export const greet = handler(
     }
 )
 
-const result = await greet.execute({
+const result = await greet({
     firstName: 'Player',
     lastName: 'one'
 })
 
+/** 
+ * safe approach with result of
+ * | { failed: false, output: Output }
+ * | { failed: true, error: Error }
+ */
 if (!result.failed) {
-    console.log(result.output)
+    console.log(result.output.greetingText)
 } else {
     console.error(result.error)
+}
+
+/**
+ * forced unwrap approach that can throw an exception
+ */ 
+try {
+    const { greetingText } = result.unwrap()
+} catch (e) {
+    console.error(e)
 }
 ```
 
@@ -45,16 +59,16 @@ if (!result.failed) {
 ```ts
 // app/api/some/path/route.ts
 
-import { nextAdapter } from '@stompbox/spring-reverb/next'
+import { withNextAdapter } from '@stompbox/spring-reverb/next'
 import { greet } from '@/use-cases'
 
-const adapter = nextAdapter(greet)({
-    // strongly-typed, with autocompletion
-    firstName: 'query',
-    lastName: 'body'
-})
-
-export const PUT = greet.withAdapter(adapter)
+export const PUT = withNextAdapter(
+    greet,
+    {
+        firstName: 'query', 
+        lastName: 'body' 
+    }
+)
 
 /**
  * PUT /api/some/path?firstName=Player 
@@ -67,18 +81,16 @@ export const PUT = greet.withAdapter(adapter)
 ### Usage with Express
 
 ```ts
-import { nextAdapter } from '@stompbox/spring-reverb/next'
+import { withNextAdapter } from '@stompbox/spring-reverb/next'
 import { greet } from '@/use-cases'
 
-const adapter = expressAdapter(greet)({
-    // strongly-typed, with autocompletion
-    firstName: 'query',
-    lastName: 'body',
-});
-
-app.put('/greet', (req, res) => {
-    greet.withAdapter(adapter)({ req, res })
-});
+app.put('/greet', withNextAdapter(
+    greet,
+    {
+        firstName: 'query',
+        lastName: 'body',
+    }
+))
 
 /**
  * PUT /greet?firstName=Player 
