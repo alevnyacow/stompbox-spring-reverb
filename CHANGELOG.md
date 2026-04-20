@@ -1,3 +1,15 @@
+# [3.0.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v2.2.2...v3.0.0) (2026-04-20)
+
+
+### Features
+
+* safe handlers ([708be15](https://github.com/alevnyacow/stompbox-spring-reverb/commit/708be1512390e51876f45c90672d9898b7693b0e))
+
+
+### BREAKING CHANGES
+
+* new contracts
+
 ## [2.2.2](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v2.2.1...v2.2.2) (2026-04-19)
 
 
