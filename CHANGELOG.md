@@ -1,3 +1,10 @@
+## [4.0.1](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v4.0.0...v4.0.1) (2026-04-20)
+
+
+### Bug Fixes
+
+* readme hotfix ([0ecd3fa](https://github.com/alevnyacow/stompbox-spring-reverb/commit/0ecd3fa5efaaa32bb472db7af5e60592dc4f8fd3))
+
 # [4.0.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v3.0.0...v4.0.0) (2026-04-20)
 
 
