@@ -81,10 +81,10 @@ export const PUT = withNextAdapter(
 ### Usage with Express
 
 ```ts
-import { withNextAdapter } from '@stompbox/spring-reverb/next'
+import { withExpressAdapter } from '@stompbox/spring-reverb/express'
 import { greet } from '@/use-cases'
 
-app.put('/greet', withNextAdapter(
+app.put('/greet', withExpressAdapter(
     greet,
     {
         firstName: 'query',
