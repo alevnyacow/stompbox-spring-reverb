@@ -1,3 +1,15 @@
+# [5.0.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v4.1.0...v5.0.0) (2026-04-21)
+
+
+### Features
+
+* unwrap in handler itself instead of a result, `failed` -> `success` ([0d7d98a](https://github.com/alevnyacow/stompbox-spring-reverb/commit/0d7d98af2883712e8355601cd499c6aa9ab51114))
+
+
+### BREAKING CHANGES
+
+* new contracts
+
 # [4.1.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v4.0.1...v4.1.0) (2026-04-21)
 
 
