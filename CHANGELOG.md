@@ -1,3 +1,10 @@
+## [6.0.2](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v6.0.1...v6.0.2) (2026-04-21)
+
+
+### Bug Fixes
+
+* removed unused import in tests ([3ed95e5](https://github.com/alevnyacow/stompbox-spring-reverb/commit/3ed95e5ed44f0dce494f0397f036e3ef8e1ac824))
+
 ## [6.0.1](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v6.0.0...v6.0.1) (2026-04-21)
 
 
