@@ -1,3 +1,10 @@
+# [4.1.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v4.0.1...v4.1.0) (2026-04-21)
+
+
+### Features
+
+* added sync variants for handlers and adapters ([67dc0e3](https://github.com/alevnyacow/stompbox-spring-reverb/commit/67dc0e37cca0813897c75bd57db7150d3fc37182))
+
 ## [4.0.1](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v4.0.0...v4.0.1) (2026-04-20)
 
 
