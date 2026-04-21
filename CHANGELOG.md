@@ -1,3 +1,15 @@
+# [6.0.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v5.0.0...v6.0.0) (2026-04-21)
+
+
+### Features
+
+* tape delay integration ([c8fe17f](https://github.com/alevnyacow/stompbox-spring-reverb/commit/c8fe17f6bc4b1aff7febd4af5a9fe1d3451320af))
+
+
+### BREAKING CHANGES
+
+* naming refactoring, new contracts
+
 # [5.0.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v4.1.0...v5.0.0) (2026-04-21)
 
 
