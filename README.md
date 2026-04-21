@@ -28,27 +28,32 @@ export const greet = springReverb(
     }
 )
 
-const result = await greet({
+/** 
+ * safe approach with result of
+ * | { success: true, output: Output }
+ * | { success: false, error: Error }
+ */
+
+const safeResult = await greet({
     firstName: 'Player',
     lastName: 'one'
 })
 
-/** 
- * safe approach with result of
- * | { failed: false, output: Output }
- * | { failed: true, error: Error }
- */
-if (!result.failed) {
-    console.log(result.output.greetingText)
+if (safeResult.success) {
+    console.log(safeResult.output.greetingText)
 } else {
-    console.error(result.error)
+    console.error(safeResult.error)
 }
 
 /**
- * forced unwrap approach that can throw an exception
+ * unsafe approach that can throw an exception
  */ 
 try {
-    const { greetingText } = result.unwrap()
+    const { greetingText } = await greet.unsafe({
+        firstName: 'Player',
+        lastName: 'one'
+    })
+    console.log(greetingText)
 } catch (e) {
     console.error(e)
 }

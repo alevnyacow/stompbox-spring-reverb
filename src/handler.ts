@@ -9,14 +9,13 @@ enum SpringReverbErrorCodes {
 }
 
 type HandlerResponse<OutputSchema extends ZodType> = 
-    { unwrap: () => z.infer<OutputSchema> } & (
-        | { failed: false, output: z.infer<OutputSchema> } 
-        | { failed: true, error: Error }
-    )
+    | { success: true, output: z.infer<OutputSchema> } 
+    | { success: false, error: Error }
 
 export type Handler<InputSchema extends ZodType, OutputSchema extends ZodType> = ((
     input: z.infer<InputSchema>
 ) => Promise<HandlerResponse<OutputSchema>>) & { 
+    unsafe: (input: z.infer<InputSchema>) => Promise<z.infer<OutputSchema>>,
     inputSchema: InputSchema, 
     outputSchema: OutputSchema,
     sourceForErrorDetails?: string,
@@ -80,21 +79,33 @@ export const springReverb = <Input extends ZodType, Output extends ZodType>(
                     )
                 )
             }
-            return { failed: false, output: parsedOutput.data, unwrap: () => parsedOutput.data }
+            return { success: true, output: parsedOutput.data }
         } catch (e: unknown) {
             if (e instanceof Error) {
-                return { failed: true, error: e, unwrap: () => { throw e } }
+                return { success: false, error: e }
             }
             const error = new SpringReverbError('UNHANDLED_EXCEPTION', enrichDetails.fromUnknownData(e)())
             return { 
-                failed: true, 
+                success: false, 
                 error,
-                unwrap: () => { throw error }
             }
         }
     }
 
-    const result = Object.assign(logic, { inputSchema, outputSchema, sourceForErrorDetails })
+    const unsafe = async (input: z.infer<Input>): Promise<z.infer<Output>> => {
+        const result = await logic(input)
+        if (result.success) {
+            return result.output
+        }
+        throw result.error
+    }
+
+    const result = Object.assign(logic, { 
+        inputSchema, 
+        outputSchema, 
+        sourceForErrorDetails, 
+        unsafe 
+    })
 
     return result
 }

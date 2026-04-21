@@ -27,7 +27,7 @@ export const withExpressAdapter = <InputSchema extends ZodObject, OutputSchema e
 ) => {
     const adapter: ExpressAdapter<InputSchema, OutputSchema> = {
         output: (x, _req, res) => {
-            if (!x.failed) {
+            if (x.success) {
                 res.send(x.output)
                 return
             }

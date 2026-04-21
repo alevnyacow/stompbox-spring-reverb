@@ -93,7 +93,7 @@ export const withNextAdapter = <InputSchema extends ZodObject, OutputSchema exte
             return input as z.infer<InputSchema>
         },
         output: async (x) => {
-            if (!x.failed) {
+            if (x.success) {
                 return NextResponse.json(x.output)
             }
             return NextResponse.json(x.error, { status: 500 })
