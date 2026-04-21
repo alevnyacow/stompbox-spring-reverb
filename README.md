@@ -104,3 +104,74 @@ app.put('/greet', expressAdapter(
  * => { greetingText: 'Hello, Player one!' }
  */ 
 ```
+
+### Creating a handler with context
+
+```ts
+import { springReverbWithCtx } from '@stompbox/spring-reverb'
+
+class UserRepository {
+    findById = async (id: string) => {
+        if (Math.random() > 0.5) {
+            return { id, name: 'Dummy user' } 
+        }
+        return null
+    }
+}
+
+const findUser = springReverbWithCtx(() => ({
+    userRepository: new UserRepository()
+}))(
+    z.string(),
+    z.object({ id: z.string(), name: z.string() }).nullable(),
+    // context is strongly-typed
+    async (id, { userRepository }) => {
+        return userRepository.findById(id)
+    }
+)
+
+const result = await findUser('test-id')
+```
+
+#### Usage with Tape Delay stompbox
+
+```ts
+import { TapeDelay } from '@stompbox/tape-delay'
+import { tapeDelayContext } from '@stompbox/spring-reverb/tape-delay'
+
+class RandomNumberGenerator {
+    num = () => {
+        return Math.random()
+    }
+}
+
+class MathService {
+    sum = (a: number, b: number) => a + b
+}
+
+
+const container = new TapeDelay({
+    RandomNumberGenerator,
+    MathService
+})
+
+const withTapeDelayCtx = tapeDelayContext(container)
+
+const getRandomSum = withTapeDelayCtx(
+    // strongly-typed keys
+    'RandomNumberGenerator',
+    'MathService'
+)(
+    z.number(),
+    z.number(),
+    // strongly-typed context
+    (target, { randomNumberGenerator, mathService }) => {
+        return mathService.sum(
+            target, 
+            randomNumberGenerator.num()
+        )
+    }
+)
+
+const result = await getRandomSum(42)
+```
