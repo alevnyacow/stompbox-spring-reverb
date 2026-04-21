@@ -6,7 +6,7 @@ import { nextAdapter } from '../src/next'
 import express from 'express'
 import { expressAdapter } from '../src/express'
 import { TapeDelay } from '@stompbox/tape-delay';
-import { tapeDelayContext } from '../dist/tape-delay';
+import { tapeDelayContext } from '../src/tape-delay';
 
 const upperCase = springReverb(
   z.object({ string: z.string(), secondString: z.string() }),
