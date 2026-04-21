@@ -1,5 +1,5 @@
 import { expect, test } from '@rstest/core';
-import { springReverb, springReverbWithCtx } from '../src/handler'
+import { springReverb } from '../src/handler'
 import z from 'zod';
 import { NextRequest } from 'next/server';
 import { nextAdapter } from '../src/next'
