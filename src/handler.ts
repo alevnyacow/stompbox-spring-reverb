@@ -28,11 +28,11 @@ export type Adapter<
   InputSchema extends ZodType,
   OutputSchema extends ZodType
 > = {
-  input: (...args: Args) => Promise<z.infer<InputSchema>>
+  input: (...args: Args) => z.infer<InputSchema> | Promise<z.infer<InputSchema>>
   output: (
     result: HandlerResponse<OutputSchema>,
     ...args: Args
-  ) => Promise<AdapterOutput>
+  ) => AdapterOutput | Promise<AdapterOutput>
 }
 
 export const withAdapter = <
@@ -58,7 +58,7 @@ export class SpringReverbError extends Limiter(SpringReverbErrorCodes) {}
 export const springReverb = <Input extends ZodType, Output extends ZodType>(
     inputSchema: Input, 
     outputSchema: Output,
-    handler: (x: z.infer<Input>) => Promise<z.infer<Output>>, 
+    handler: (x: z.infer<Input>) => z.infer<Output> | Promise<z.infer<Output>>, 
     sourceForErrorDetails?: string
 ): Handler<Input, Output> => {
     const logic = async (input: z.infer<Input>): Promise<HandlerResponse<Output>> => {

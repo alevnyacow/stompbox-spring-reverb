@@ -26,14 +26,14 @@ export const withExpressAdapter = <InputSchema extends ZodObject, OutputSchema e
     parametersMapping: ParametersMapping<InputSchema>
 ) => {
     const adapter: ExpressAdapter<InputSchema, OutputSchema> = {
-        output: async (x, _req, res) => {
+        output: (x, _req, res) => {
             if (!x.failed) {
                 res.send(x.output)
                 return
             }
             res.status(500).send(x.error)
         },
-        input: async (req, res) => {
+        input: (req, _res) => {
             let input: Record<string, any> = {}
 
             const queryParameters = Object.entries(parametersMapping)

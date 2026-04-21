@@ -9,7 +9,7 @@ import { withExpressAdapter } from '../src/express'
 const handler = springReverb(
   z.object({ string: z.string(), secondString: z.string() }),
   z.object({ stringInUpperCase: z.string() }),
-  async (x) => ({ stringInUpperCase: `${x.string.toUpperCase()} ${x.secondString.toUpperCase()}` })
+  (x) => ({ stringInUpperCase: `${x.string.toUpperCase()} ${x.secondString.toUpperCase()}` })
 )
 
 test('Express adapter', async () => {

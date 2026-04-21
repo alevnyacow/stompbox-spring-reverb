@@ -20,8 +20,8 @@ export const greet = springReverb(
     z.object({ 
         greetingText: z.string() 
     }),
-    // strongly-typed handler
-    async ({ firstName, lastName }) => {
+    // strongly-typed handler, can be also async
+    ({ firstName, lastName }) => {
         return {
             greetingText: `Hello, ${firstName} ${lastName}!`
         }
