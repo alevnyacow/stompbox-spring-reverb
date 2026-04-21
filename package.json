@@ -33,6 +33,11 @@
       "types": "./dist/express.d.ts",
       "import": "./dist/express.js",
       "require": "./dist/express.cjs"
+    },
+    "./tape-delay": {
+      "types": "./dist/tape-delay.d.ts",
+      "import": "./dist/tape-delay.js",
+      "require": "./dist/tape-delay.cjs"
     }
   },
   "main": "./dist/index.cjs",
@@ -56,6 +61,7 @@
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@semantic-release/npm": "^13.1.5",
+    "@stompbox/tape-delay": "^1.1.0",
     "@types/express": "^5.0.6",
     "@types/node": "^24.12.2",
     "express": "^5.2.1",
@@ -68,14 +74,18 @@
     "zod": "^4.3.6"
   },
   "peerDependencies": {
+    "express": ">=2 <6",
     "next": ">=13 <17",
-    "express": ">=2 <6"
+    "@stompbox/tape-delay": "^1.1.0"
   },
   "peerDependenciesMeta": {
     "next": {
       "optional": true
     },
     "express": {
+      "optional": true
+    },
+    "@stompbox/tape-delay": {
       "optional": true
     }
   }

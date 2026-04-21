@@ -8,15 +8,15 @@ enum SpringReverbErrorCodes {
     UNHANDLED_EXCEPTION = 'SPRING-REVERB___UNHANDLED_EXCEPTION'
 }
 
-type HandlerResponse<OutputSchema extends ZodType> = 
+type SpringReverbHandlerResponse<OutputSchema extends ZodType> = 
     | { success: true, output: z.infer<OutputSchema> } 
     | { success: false, error: Error }
 
-export type Handler<InputSchema extends ZodType, OutputSchema extends ZodType> = ((
-    input: z.infer<InputSchema>
-) => Promise<HandlerResponse<OutputSchema>>) & { 
+export type SpringReverbHandler<InputSchema extends ZodType, OutputSchema extends ZodType> = ((
+    input: z.infer<InputSchema>,
+) => Promise<SpringReverbHandlerResponse<OutputSchema>>) & { 
     unsafe: (input: z.infer<InputSchema>) => Promise<z.infer<OutputSchema>>,
-    inputSchema: InputSchema, 
+    inputSchema: InputSchema,
     outputSchema: OutputSchema,
     sourceForErrorDetails?: string,
 }
@@ -29,18 +29,18 @@ export type Adapter<
 > = {
   input: (...args: Args) => z.infer<InputSchema> | Promise<z.infer<InputSchema>>
   output: (
-    result: HandlerResponse<OutputSchema>,
+    result: SpringReverbHandlerResponse<OutputSchema>,
     ...args: Args
   ) => AdapterOutput | Promise<AdapterOutput>
 }
 
-export const withAdapter = <
+export const handleWithAdapter = <
   AdapterArgs extends unknown[],
   AdapterOutput,
   InputSchema extends ZodType,
   OutputSchema extends ZodType
 >(
-  handler: Handler<InputSchema, OutputSchema>,
+  handler: SpringReverbHandler<InputSchema, OutputSchema>,
   adapter: Adapter<AdapterArgs, AdapterOutput, InputSchema, OutputSchema>
 ) => {
   return async (...adapterArgs: AdapterArgs): Promise<AdapterOutput> => {
@@ -54,13 +54,20 @@ export const withAdapter = <
 
 export class SpringReverbError extends Limiter(SpringReverbErrorCodes) {}
 
-export const springReverb = <Input extends ZodType, Output extends ZodType>(
+const springReverbBase = <Input extends ZodType, Output extends ZodType, Context = void>(
     inputSchema: Input, 
     outputSchema: Output,
-    handler: (x: z.infer<Input>) => z.infer<Output> | Promise<z.infer<Output>>, 
+    handler:
+    // Without context
+    | ((x: z.infer<Input>) => z.infer<Output> | Promise<z.infer<Output>>)
+    // With context
+    | {
+        getContext: () => Promise<Context> | Context,
+        handler: (x: z.infer<Input>, ctx: Context) => z.infer<Output> | Promise<z.infer<Output>>
+    },
     sourceForErrorDetails?: string
-): Handler<Input, Output> => {
-    const logic = async (input: z.infer<Input>): Promise<HandlerResponse<Output>> => {
+): SpringReverbHandler<Input, Output> => {
+    const logic = async (input: z.infer<Input>): Promise<SpringReverbHandlerResponse<Output>> => {
         try {
             const parsedInput = inputSchema.safeParse(input)
             if (!parsedInput.success) {
@@ -70,7 +77,9 @@ export const springReverb = <Input extends ZodType, Output extends ZodType>(
                     )
                 ))
             }
-            const output = await handler(parsedInput.data)
+            const output = 'getContext' in handler 
+                ? await handler.handler(parsedInput.data, await handler.getContext()) 
+                : await handler(parsedInput.data)
             const parsedOutput = outputSchema.safeParse(output)
             if (!parsedOutput.success) {
                 throw new SpringReverbError('INVALID_OUTPUT', enrichDetails.withSource(sourceForErrorDetails)(
@@ -108,4 +117,37 @@ export const springReverb = <Input extends ZodType, Output extends ZodType>(
     })
 
     return result
+}
+
+export const springReverb = <Input extends ZodType, Output extends ZodType> (
+    inputSchema: Input, 
+    outputSchema: Output,
+    handler: (input: z.infer<Input>) => z.infer<Output> | Promise<z.infer<Output>>,
+    sourceForErrorDetails?: string
+) => {
+    return springReverbBase(
+        inputSchema,
+        outputSchema,
+        handler,
+        sourceForErrorDetails
+    )
+}
+
+export const springReverbWithCtx = <Context>(getContext: () => Context | Promise<Context>) => {
+    return <Input extends ZodType, Output extends ZodType>(
+        inputSchema: Input,
+        outputSchema: Output,
+        handler: (input: z.infer<Input>, ctx: Context) => z.infer<Output> | Promise<z.infer<Output>>,
+        sourceForErrorDetails?: string
+    ) => {
+        return springReverbBase(
+            inputSchema,
+            outputSchema,
+            {
+                getContext,
+                handler
+            },
+            sourceForErrorDetails
+        )
+    }
 }

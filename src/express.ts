@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { Adapter, Handler, withAdapter } from './handler'
+import { Adapter, SpringReverbHandler, handleWithAdapter } from './handler'
 import z, { ZodObject, ZodType } from 'zod'
 import { ParametersMapping } from './api-adapter-types'
 import { enrichDetails, Limiter } from '@stompbox/limiter'
@@ -21,8 +21,8 @@ export class ExpressAdapterError extends Limiter({
 
 type ExpressAdapter<InputSchema extends ZodObject, OutputSchema extends ZodObject> = Adapter<[req: Request, res: Response], void, InputSchema, OutputSchema>
 
-export const withExpressAdapter = <InputSchema extends ZodObject, OutputSchema extends ZodObject>(
-    handler: Handler<InputSchema, OutputSchema>,
+export const expressAdapter = <InputSchema extends ZodObject, OutputSchema extends ZodObject>(
+    handler: SpringReverbHandler<InputSchema, OutputSchema>,
     parametersMapping: ParametersMapping<InputSchema>
 ) => {
     const adapter: ExpressAdapter<InputSchema, OutputSchema> = {
@@ -100,6 +100,6 @@ export const withExpressAdapter = <InputSchema extends ZodObject, OutputSchema e
             return input as z.infer<InputSchema>
         }
     }
-    return withAdapter(handler, adapter)
+    return handleWithAdapter(handler, adapter)
 }
 

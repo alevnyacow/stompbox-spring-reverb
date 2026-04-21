@@ -64,10 +64,10 @@ try {
 ```ts
 // app/api/some/path/route.ts
 
-import { withNextAdapter } from '@stompbox/spring-reverb/next'
+import { nextAdapter } from '@stompbox/spring-reverb/next'
 import { greet } from '@/use-cases'
 
-export const PUT = withNextAdapter(
+export const PUT = nextAdapter(
     greet,
     {
         firstName: 'query', 
@@ -86,10 +86,10 @@ export const PUT = withNextAdapter(
 ### Usage with Express
 
 ```ts
-import { withExpressAdapter } from '@stompbox/spring-reverb/express'
+import { expressAdapter } from '@stompbox/spring-reverb/express'
 import { greet } from '@/use-cases'
 
-app.put('/greet', withExpressAdapter(
+app.put('/greet', expressAdapter(
     greet,
     {
         firstName: 'query',

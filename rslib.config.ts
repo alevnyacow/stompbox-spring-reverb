@@ -10,7 +10,8 @@ export default defineConfig({
         entry: {
           index: './src/index.ts',
           next: './src/next.ts',
-          express: './src/express.ts'
+          express: './src/express.ts',
+          ['tape-delay']: './src/tape-delay.ts'
         }
       }
     },
@@ -21,7 +22,8 @@ export default defineConfig({
         entry: {
           index: './src/index.ts',
           next: './src/next.ts',
-          express: './src/express.ts'
+          express: './src/express.ts',
+          ['tape-delay']: './src/tape-delay.ts'
         }
       }
     },

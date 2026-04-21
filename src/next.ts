@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import z, { ZodObject, ZodType } from 'zod'
-import { Adapter, Handler, withAdapter } from './handler'
+import { Adapter, SpringReverbHandler, handleWithAdapter } from './handler'
 import { Limiter, enrichDetails } from '@stompbox/limiter'
 import { zodErrorDetails } from '@stompbox/limiter/zod'
 import { ParametersMapping } from './api-adapter-types'
@@ -19,8 +19,8 @@ export class NextAdapterError extends Limiter({
     ...nextAdapterErrors 
 }) { }
 
-export const withNextAdapter = <InputSchema extends ZodObject, OutputSchema extends ZodObject>(
-    handler: Handler<InputSchema, OutputSchema>,
+export const nextAdapter = <InputSchema extends ZodObject, OutputSchema extends ZodObject>(
+    handler: SpringReverbHandler<InputSchema, OutputSchema>,
     parametersMapping: ParametersMapping<InputSchema>
 ) => {
     const adapter: Adapter<[request: NextRequest], NextResponse, InputSchema, OutputSchema> = {
@@ -100,6 +100,6 @@ export const withNextAdapter = <InputSchema extends ZodObject, OutputSchema exte
         }
     }
 
-    return withAdapter(handler, adapter)
+    return handleWithAdapter(handler, adapter)
 }
 
