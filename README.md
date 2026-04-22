@@ -1,6 +1,6 @@
 # Spring Reverb
 
-Framework-agnostic plug-and-play handlers with built-in adapters for Next and Express.
+Framework-agnostic handlers with built-in adapters for Next and Express.
 
 ## Example
 
