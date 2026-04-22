@@ -1,3 +1,15 @@
+# [7.0.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v6.0.2...v7.0.0) (2026-04-22)
+
+
+### Features
+
+* explicit API route contracts ([8ba88eb](https://github.com/alevnyacow/stompbox-spring-reverb/commit/8ba88eb9ee7d32ad7747bace08a761d28cdfe1b6))
+
+
+### BREAKING CHANGES
+
+* new contracts
+
 ## [6.0.2](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v6.0.1...v6.0.2) (2026-04-21)
 
 
