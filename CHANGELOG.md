@@ -1,3 +1,10 @@
+## [7.0.2](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v7.0.1...v7.0.2) (2026-04-22)
+
+
+### Bug Fixes
+
+* next adapter ([37f597c](https://github.com/alevnyacow/stompbox-spring-reverb/commit/37f597cb750376368b26d42e883d06ed5b5a0393))
+
 ## [7.0.1](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v7.0.0...v7.0.1) (2026-04-22)
 
 
