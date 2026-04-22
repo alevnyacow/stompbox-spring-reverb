@@ -1,3 +1,10 @@
+## [7.0.1](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v7.0.0...v7.0.1) (2026-04-22)
+
+
+### Bug Fixes
+
+* changed description and readme ([1b3e982](https://github.com/alevnyacow/stompbox-spring-reverb/commit/1b3e98289252f26ea85b6198ea3fe1e14d53c696))
+
 # [7.0.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v6.0.2...v7.0.0) (2026-04-22)
 
 
