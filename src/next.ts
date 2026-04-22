@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import z, { ZodObject, ZodType } from 'zod'
+import z, { ZodObject, ZodString } from 'zod'
 import { Adapter, SpringReverbHandler, handleWithAdapter } from './handler'
 import { Limiter, enrichDetails } from '@stompbox/limiter'
 import { zodErrorDetails } from '@stompbox/limiter/zod'
-import { ParametersMapping } from './api-adapter-types'
+import { APIInputSchemas } from './api-adapter-types'
 
 const nextAdapterDefaultErrors = {
     INVALID_QUERY_PARAMS: 'SPRING-REVERB___NEXT-ADAPTER-INVALID-QUERY-PARAMS',
@@ -19,36 +19,29 @@ export class NextAdapterError extends Limiter({
     ...nextAdapterErrors 
 }) { }
 
-export const nextAdapter = <InputSchema extends ZodObject, OutputSchema extends ZodObject>(
+
+export const nextAdapter = <
+    InputSchema extends ZodObject, 
+    OutputSchema extends ZodObject, 
+    QuerySchema extends ZodObject<Record<string, ZodString>> | undefined, 
+    BodySchema extends ZodObject | undefined
+>(
     handler: SpringReverbHandler<InputSchema, OutputSchema>,
-    parametersMapping: ParametersMapping<InputSchema>
+    schemasGenerator: APIInputSchemas<InputSchema, QuerySchema, BodySchema>,
+    inputMapping: (x: z.infer<QuerySchema> & z.infer<BodySchema>) => z.infer<InputSchema>
 ) => {
+    const schemas = schemasGenerator(handler.inputSchema)
+
     const adapter: Adapter<[request: NextRequest], NextResponse, InputSchema, OutputSchema> = {
         input: async (request: NextRequest): Promise<z.infer<InputSchema>> => {
             let input: Record<string, any> = {}
 
-            const queryParameters = Object.entries(parametersMapping)
-                .filter(([, x]) => x === 'query' || x.source === 'query') as [string, 'query' | { customSchema: ZodType }][] 
-
-            if (queryParameters.length) {
+            if ('querySchema' in schemas) {
                 const queryParamsAsObject = Object.fromEntries(
                     request.nextUrl.searchParams.entries()
                 );
 
-                let schema: ZodObject = z.object({})
-
-                for (const entry of queryParameters) {
-                    const [field, rule] = entry
-                    if (rule === 'query') {
-                        // @ts-expect-error
-                        schema = schema.extend(handler.inputSchema.pick({ [field]: true }).shape)
-                    }
-                    if (typeof rule === 'object' && rule && 'customSchema' in rule) {
-                        schema = schema.extend({ [field]: rule.customSchema })
-                    }
-                }
-
-                const queryParamsParsed = schema.safeParse(queryParamsAsObject);
+                const queryParamsParsed = schemas.querySchema.safeParse(queryParamsAsObject);
 
                 if (!queryParamsParsed.success) {
                     throw new NextAdapterError('INVALID_QUERY_PARAMS', enrichDetails.withSource(handler.sourceForErrorDetails)(
@@ -61,24 +54,10 @@ export const nextAdapter = <InputSchema extends ZodObject, OutputSchema extends 
                 input = { ...input, ...queryParamsParsed.data }
             }
 
-            const bodyEntries = Object.entries(
-                parametersMapping
-            ).filter(([, x]) => x === 'body' || x.source === 'body') as [string, 'body' | { customSchema: ZodType }][]
-
-            if (bodyEntries.length) {
-                let schema = z.object({})
+            if ('bodySchema' in schemas) {
                 const body = await request.json();
-                for (const bodyEntry of bodyEntries) {
-                    const [field, rule] = bodyEntry
-                    if (rule === 'body') {
-                        // @ts-expect-error
-                        schema = schema.extend(handler.inputSchema.pick({ [field]: true }).shape)
-                    }
-                    if (typeof rule === 'object' && rule && 'customSchema' in rule) {
-                        schema = schema.extend({ [field]: rule.customSchema })
-                    }
-                }
-                const bodyParsed = schema.safeParse(body)
+
+                const bodyParsed = schemas.bodySchema.safeParse(body)
                 if (!bodyParsed.success) {
                     throw new NextAdapterError('INVALID_BODY_PAYLOAD', enrichDetails.withSource(handler.sourceForErrorDetails)(
                         enrichDetails.withTimespamp(
@@ -90,7 +69,7 @@ export const nextAdapter = <InputSchema extends ZodObject, OutputSchema extends 
                 input = {...input, ...bodyParsed.data}
             }
 
-            return input as z.infer<InputSchema>
+            return inputMapping(input as z.infer<QuerySchema> & z.infer<BodySchema>)
         },
         output: async (x) => {
             if (x.success) {
@@ -100,6 +79,7 @@ export const nextAdapter = <InputSchema extends ZodObject, OutputSchema extends 
         }
     }
 
-    return handleWithAdapter(handler, adapter)
-}
+    const result = handleWithAdapter(handler, adapter)
 
+    return Object.assign(result, { ___api_metadata:  {  ...schemas, response: handler.outputSchema }  })
+}

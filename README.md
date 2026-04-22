@@ -65,15 +65,33 @@ try {
 // app/api/some/path/route.ts
 
 import { nextAdapter } from '@stompbox/spring-reverb/next'
+import type { EndpointDTOs } from '@stompbox/spring-reverb'
 import { greet } from '@/use-cases'
 
 export const PUT = nextAdapter(
+    // handler
     greet,
-    {
-        firstName: 'query', 
-        lastName: 'body' 
-    }
+    // description of API endpoint request
+    (inputSchema) => ({
+        querySchema: inputSchema.pick({ firstName: true }),
+        bodySchema: inputSchema.pick({ lastName: true })
+    }),
+    // map API endpoint request to handler input
+    x => x
 )
+
+// request and response DTOs, can be used on client
+/**
+ * {
+ *     requestDetails: {
+ *         query: { firstName: string },
+ *         body: { lastName: string }
+ *     }
+ *     requestDTO: { firstName: string, lastName: string },
+ *     responseDTO: { greetingText: string }
+ * }
+ */
+export type PUTEndpoint = EndpointDTOs<typeof PUT>
 
 /**
  * PUT /api/some/path?firstName=Player 
@@ -87,15 +105,22 @@ export const PUT = nextAdapter(
 
 ```ts
 import { expressAdapter } from '@stompbox/spring-reverb/express'
+import type { EndpointDTOs } from '@stompbox/spring-reverb'
 import { greet } from '@/use-cases'
 
-app.put('/greet', expressAdapter(
+const PUT = expressAdapter(
     greet,
-    {
-        firstName: 'query',
-        lastName: 'body',
-    }
-))
+    // short-handed pick variant
+    ({ pick }) => ({
+        querySchema: pick({ firstName: true }),
+        bodySchema: pick({ lastName: true })
+    }),
+    x => x
+)
+
+export type PUTEndpoint = EndpointDTOs<typeof PUT>
+
+app.put('/greet', PUT)
 
 /**
  * PUT /greet?firstName=Player 

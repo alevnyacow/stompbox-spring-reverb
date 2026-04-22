@@ -7,6 +7,7 @@ import express from 'express'
 import { expressAdapter } from '../src/express'
 import { TapeDelay } from '@stompbox/tape-delay';
 import { tapeDelayContext } from '../src/tape-delay';
+import { EndpointDTOs } from '../src/api-adapter-types';
 
 const upperCase = springReverb(
   z.object({ string: z.string(), secondString: z.string() }),
@@ -16,11 +17,17 @@ const upperCase = springReverb(
 
 test('Express adapter', async () => {
   const app = express();
+
+  const expressEndpoint = expressAdapter(upperCase, (schema) => ({
+      querySchema: schema
+    }),
+    x => x
+  )
+
   
-  app.get('/', expressAdapter(upperCase, {
-    secondString: 'query',
-    string: 'query'
-  }));
+  app.get('/', expressEndpoint);
+
+  type A = EndpointDTOs<typeof expressEndpoint>
 
   const server = await new Promise<ReturnType<typeof app.listen>>((resolve) => {
     const s = app.listen(0, () => resolve(s));
@@ -40,7 +47,16 @@ test('Express adapter', async () => {
 });
 
 test('Next adapter', async () => {
-  const NextRoute = nextAdapter(upperCase, { string: 'query', secondString: 'body' })
+  const NextRoute = nextAdapter(
+    upperCase, 
+    (schema) => ({ 
+      bodySchema: schema.pick({ secondString: true }),
+      querySchema: schema.pick({ string: true }),
+    }), 
+    x => x
+  )
+
+  type A = EndpointDTOs<typeof NextRoute>
 
   const data = await NextRoute(new NextRequest('http://localhost.mock.url:3000?string=hello', {
     body: JSON.stringify({ secondString: 'world' }),
