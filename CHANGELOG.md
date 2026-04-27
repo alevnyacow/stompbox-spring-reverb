@@ -1,3 +1,15 @@
+# [8.0.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v7.0.2...v8.0.0) (2026-04-27)
+
+
+### Features
+
+* simplified contracts, mapper is optional now ([091a64d](https://github.com/alevnyacow/stompbox-spring-reverb/commit/091a64d3cf754f084782587331e52f458b75366e))
+
+
+### BREAKING CHANGES
+
+* new contract
+
 ## [7.0.2](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v7.0.1...v7.0.2) (2026-04-22)
 
 
