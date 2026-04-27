@@ -10,23 +10,23 @@ Framework-agnostic handlers with built-in adapters for Next and Express.
 import { createHandler } from '@stompbox/spring-reverb'
 import z from 'zod'
 
-export const greet = createHandler(
-    {
-        input: z.object({
-            firstName: z.string(), 
-            lastName: z.string() 
-        }),
-        output: z.object({ 
-            greetingText: z.string() 
-        }),
-    },
-    // strongly-typed handler, can be also async
-    ({ firstName, lastName }) => {
+export const greet = createHandler({
+    // input schema
+    input: z.object({
+        firstName: z.string(), 
+        lastName: z.string() 
+    }),
+    // output schema
+    output: z.object({ 
+        greetingText: z.string() 
+    }),
+    // handler, can be async
+    handler: ({ firstName, lastName }) => {
         return {
             greetingText: `Hello, ${firstName} ${lastName}!`
         }
     }
-)
+})
 
 /** 
  * safe approach with result of
@@ -141,16 +141,17 @@ class UserRepository {
     }
 }
 
-const findUser = createHandler(
-    {
-        input: z.string(),
-        output: z.object({ id: z.string(), name: z.string() }).nullable(),
-        getContext: () => ({ userRepository: new UserRepository() })
-    },     
-    async (id, ({ userRepository })) => {
+const findUser = createHandler({
+    input: z.string(),
+    output: z.object({ 
+        id: z.string(), 
+        name: z.string() 
+    }).nullable(),
+    getContext: () => ({ userRepository: new UserRepository() }),   
+    handler: async (id, ({ userRepository })) => {
         return userRepository.findById(id)
     }
-)
+})
 
 const result = await findUser('test-id')
 ```

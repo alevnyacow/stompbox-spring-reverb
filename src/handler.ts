@@ -120,33 +120,33 @@ const springReverbBase = <Input extends ZodType, Output extends ZodType, Context
 }
 
 export function createHandler<Input extends ZodType, Output extends ZodType, Context>(
-    metadata: {
+    base: {
         input: Input,
         output: Output,
-        getContext: () => (Context | Promise<Context>)
+        getContext: () => (Context | Promise<Context>),
+        handler: (input: z.infer<Input>, ctx: Context) => Promise<z.infer<Output>> | z.infer<Output>
     },
-    handler: (input: z.infer<Input>, ctx: Context) => Promise<z.infer<Output>> | z.infer<Output>,
     additionalMetadata?: {
         sourceForErrorDetails?: string
     }
 ): ReturnType<typeof springReverbBase<Input, Output, Context>>
 
 export function createHandler<Input extends ZodType, Output extends ZodType>(
-    metadata: {
+    base: {
         input: Input,
         output: Output,
+        handler: (input: z.infer<Input>) => Promise<z.infer<Output>> | z.infer<Output>,
     },
-    handler: (input: z.infer<Input>) => Promise<z.infer<Output>> | z.infer<Output>,
     additionalMetadata?: {
         sourceForErrorDetails?: string
     }
 ): ReturnType<typeof springReverbBase<Input, Output>>
 
-export function createHandler(metadata: any, handler: any, additionalMetadata: any) {
+export function createHandler(metadata: any, additionalMetadata: any) {
     return springReverbBase(
         metadata.input,
         metadata.output,
-        metadata.getContext ? { getContext: metadata.getContext, handler } : handler,
+        metadata.getContext ? { getContext: metadata.getContext, handler: metadata.handler } : metadata.handler,
         additionalMetadata?.sourceForErrorDetails
     )
 }

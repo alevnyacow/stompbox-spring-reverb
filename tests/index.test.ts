@@ -8,15 +8,13 @@ import { expressAdapter } from '../src/express'
 import { EndpointContracts } from '../src/api-adapter-types';
 import { newContainer } from '@stompbox/tape-delay';
 
-const upperCase = createHandler(
-  {
-    input: z.object({ string: z.string(), secondString: z.string() }),
-    output: z.object({ stringInUpperCase: z.string() }),
-  }, 
-  ({ secondString, string }) => { 
+const upperCase = createHandler({
+  input: z.object({ string: z.string(), secondString: z.string() }),
+  output: z.object({ stringInUpperCase: z.string() }),
+  handler: ({ secondString, string }) => { 
     return { stringInUpperCase: `${string.toUpperCase()} ${secondString.toUpperCase()}` } 
   }
-)
+})
 
 test('Express adapter', async () => {
   const app = express();
@@ -70,16 +68,12 @@ test('Tape delay', async () => {
   class RandomNumber { getNumber = () => Math.random() }
   const container = newContainer({ RandomNumber })
 
-  const f = createHandler(
-    {
-      input: z.number(),
-      output: z.number(),
-      getContext: container.resolve
-    },
-    async (i, ctx) => {
-      return i + ctx.randomNumber.getNumber()
-    }
-  )
+  const f = createHandler({
+    input: z.number(),
+    output: z.number(),
+    getContext: container.resolve,
+    handler: (i, ctx) => i + ctx.randomNumber.getNumber()
+  })
 
   const result = await f.unsafe(2)
 
