@@ -1,3 +1,15 @@
+# [9.0.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v8.0.0...v9.0.0) (2026-04-27)
+
+
+### Features
+
+* extracted handler in main object ([3ab4b9f](https://github.com/alevnyacow/stompbox-spring-reverb/commit/3ab4b9f84cfbac9e73f0043b993c40cbddab9633))
+
+
+### BREAKING CHANGES
+
+* new contracts
+
 # [8.0.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v7.0.2...v8.0.0) (2026-04-27)
 
 
