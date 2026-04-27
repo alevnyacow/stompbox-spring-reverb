@@ -36,7 +36,6 @@ function jsonResponse<T>(data: T, init?: ResponseInit) {
   }) as any
 }
 
-
 export const nextAdapter = <
     InputSchema extends ZodObject, 
     OutputSchema extends ZodObject, 
@@ -45,7 +44,7 @@ export const nextAdapter = <
 >(
     handler: SpringReverbHandler<InputSchema, OutputSchema>,
     schemasGenerator: APIInputSchemas<InputSchema, QuerySchema, BodySchema>,
-    inputMapping: (x: z.infer<QuerySchema> & z.infer<BodySchema>) => z.infer<InputSchema>
+    inputMapping?: (x: z.infer<QuerySchema> & z.infer<BodySchema>) => z.infer<InputSchema>
 ) => {
     const schemas = schemasGenerator(handler.inputSchema)
 
@@ -86,7 +85,9 @@ export const nextAdapter = <
                 input = {...input, ...bodyParsed.data}
             }
 
-            return inputMapping(input as z.infer<QuerySchema> & z.infer<BodySchema>)
+            return inputMapping 
+                ? inputMapping(input as z.infer<QuerySchema> & z.infer<BodySchema>) 
+                : input as z.infer<InputSchema>
         },
         output: async (x) => {
             if (x.success) {

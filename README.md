@@ -7,19 +7,19 @@ Framework-agnostic handlers with built-in adapters for Next and Express.
 ### Creating a handler
 
 ```ts
-import { springReverb } from '@stompbox/spring-reverb'
+import { createHandler } from '@stompbox/spring-reverb'
 import z from 'zod'
 
-export const greet = springReverb(
-    // input schema
-    z.object({
-        firstName: z.string(), 
-        lastName: z.string() 
-    }),
-    // output schema
-    z.object({ 
-        greetingText: z.string() 
-    }),
+export const greet = createHandler(
+    {
+        input: z.object({
+            firstName: z.string(), 
+            lastName: z.string() 
+        }),
+        output: z.object({ 
+            greetingText: z.string() 
+        }),
+    },
     // strongly-typed handler, can be also async
     ({ firstName, lastName }) => {
         return {
@@ -65,7 +65,7 @@ try {
 // app/api/some/path/route.ts
 
 import { nextAdapter } from '@stompbox/spring-reverb/next'
-import type { EndpointDTOs } from '@stompbox/spring-reverb'
+import type { EndpointContracts } from '@stompbox/spring-reverb'
 import { greet } from '@/use-cases'
 
 export const PUT = nextAdapter(
@@ -74,10 +74,8 @@ export const PUT = nextAdapter(
     // description of API endpoint request
     (inputSchema) => ({
         querySchema: inputSchema.pick({ firstName: true }),
-        bodySchema: inputSchema.pick({ lastName: true })
-    }),
-    // map API endpoint request to handler input
-    x => x
+        bodySchema: inputSchema.omit({ firstName: true })
+    })
 )
 
 // request and response DTOs, can be used on client
@@ -91,7 +89,7 @@ export const PUT = nextAdapter(
  *     responseDTO: { greetingText: string }
  * }
  */
-export type PUTEndpoint = EndpointDTOs<typeof PUT>
+export type PUTEndpoint = EndpointContracts<typeof PUT>
 
 /**
  * PUT /api/some/path?firstName=Player 
@@ -105,20 +103,19 @@ export type PUTEndpoint = EndpointDTOs<typeof PUT>
 
 ```ts
 import { expressAdapter } from '@stompbox/spring-reverb/express'
-import type { EndpointDTOs } from '@stompbox/spring-reverb'
+import type { EndpointContracts } from '@stompbox/spring-reverb'
 import { greet } from '@/use-cases'
 
 const PUT = expressAdapter(
     greet,
     // short-handed pick variant
-    ({ pick }) => ({
+    ({ pick, omit }) => ({
         querySchema: pick({ firstName: true }),
-        bodySchema: pick({ lastName: true })
+        bodySchema: omit({ firstName: true })
     }),
-    x => x
 )
 
-export type PUTEndpoint = EndpointDTOs<typeof PUT>
+export type PUTEndpoint = EndpointContracts<typeof PUT>
 
 app.put('/greet', PUT)
 
@@ -133,7 +130,7 @@ app.put('/greet', PUT)
 ### Creating a handler with context
 
 ```ts
-import { springReverbWithCtx } from '@stompbox/spring-reverb'
+import { createHandler } from '@stompbox/spring-reverb'
 
 class UserRepository {
     findById = async (id: string) => {
@@ -144,59 +141,16 @@ class UserRepository {
     }
 }
 
-const findUser = springReverbWithCtx(() => ({
-    userRepository: new UserRepository()
-}))(
-    z.string(),
-    z.object({ id: z.string(), name: z.string() }).nullable(),
-    // context is strongly-typed
-    async (id, { userRepository }) => {
+const findUser = createHandler(
+    {
+        input: z.string(),
+        output: z.object({ id: z.string(), name: z.string() }).nullable(),
+        getContext: () => ({ userRepository: new UserRepository() })
+    },     
+    async (id, ({ userRepository })) => {
         return userRepository.findById(id)
     }
 )
 
 const result = await findUser('test-id')
-```
-
-#### Usage with Tape Delay stompbox
-
-```ts
-import { TapeDelay } from '@stompbox/tape-delay'
-import { tapeDelayContext } from '@stompbox/spring-reverb/tape-delay'
-
-class RandomNumberGenerator {
-    num = () => {
-        return Math.random()
-    }
-}
-
-class MathService {
-    sum = (a: number, b: number) => a + b
-}
-
-
-const container = new TapeDelay({
-    RandomNumberGenerator,
-    MathService
-})
-
-const withTapeDelayCtx = tapeDelayContext(container)
-
-const getRandomSum = withTapeDelayCtx(
-    // strongly-typed keys
-    'RandomNumberGenerator',
-    'MathService'
-)(
-    z.number(),
-    z.number(),
-    // strongly-typed context
-    (target, { randomNumberGenerator, mathService }) => {
-        return mathService.sum(
-            target, 
-            randomNumberGenerator.num()
-        )
-    }
-)
-
-const result = await getRandomSum(42)
 ```

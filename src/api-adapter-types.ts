@@ -16,7 +16,7 @@ export type WithAPIMetadata<QuerySchema extends ZodObject<Record<string, ZodStri
     ___api_metadata: { querySchema?: QuerySchema, bodySchema?: BodySchema, response: Response }
 }
 
-export type EndpointDTOs<Metadata extends WithAPIMetadata<any, any, any>> = {
+export type EndpointContracts<Metadata extends WithAPIMetadata<any, any, any>> = {
     requestDetails: {
         body: z.infer<Metadata['___api_metadata']['bodySchema']>,
         query: z.infer<Metadata['___api_metadata']['querySchema']>,

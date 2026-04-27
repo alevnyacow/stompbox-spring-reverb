@@ -119,35 +119,34 @@ const springReverbBase = <Input extends ZodType, Output extends ZodType, Context
     return result
 }
 
-export const springReverb = <Input extends ZodType, Output extends ZodType> (
-    inputSchema: Input, 
-    outputSchema: Output,
-    handler: (input: z.infer<Input>) => z.infer<Output> | Promise<z.infer<Output>>,
-    sourceForErrorDetails?: string
-) => {
-    return springReverbBase(
-        inputSchema,
-        outputSchema,
-        handler,
-        sourceForErrorDetails
-    )
-}
-
-export const springReverbWithCtx = <Context>(getContext: () => Context | Promise<Context>) => {
-    return <Input extends ZodType, Output extends ZodType>(
-        inputSchema: Input,
-        outputSchema: Output,
-        handler: (input: z.infer<Input>, ctx: Context) => z.infer<Output> | Promise<z.infer<Output>>,
+export function createHandler<Input extends ZodType, Output extends ZodType, Context>(
+    metadata: {
+        input: Input,
+        output: Output,
+        getContext: () => (Context | Promise<Context>)
+    },
+    handler: (input: z.infer<Input>, ctx: Context) => Promise<z.infer<Output>> | z.infer<Output>,
+    additionalMetadata?: {
         sourceForErrorDetails?: string
-    ) => {
-        return springReverbBase(
-            inputSchema,
-            outputSchema,
-            {
-                getContext,
-                handler
-            },
-            sourceForErrorDetails
-        )
     }
+): ReturnType<typeof springReverbBase<Input, Output, Context>>
+
+export function createHandler<Input extends ZodType, Output extends ZodType>(
+    metadata: {
+        input: Input,
+        output: Output,
+    },
+    handler: (input: z.infer<Input>) => Promise<z.infer<Output>> | z.infer<Output>,
+    additionalMetadata?: {
+        sourceForErrorDetails?: string
+    }
+): ReturnType<typeof springReverbBase<Input, Output>>
+
+export function createHandler(metadata: any, handler: any, additionalMetadata: any) {
+    return springReverbBase(
+        metadata.input,
+        metadata.output,
+        metadata.getContext ? { getContext: metadata.getContext, handler } : handler,
+        additionalMetadata?.sourceForErrorDetails
+    )
 }

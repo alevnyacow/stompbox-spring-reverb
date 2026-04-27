@@ -1,33 +1,34 @@
 import { expect, test } from '@rstest/core';
-import { springReverb } from '../src/handler'
+import { createHandler } from '../src/handler'
 import z from 'zod';
 import { NextRequest } from 'next/server';
 import { nextAdapter } from '../src/next'
 import express from 'express'
 import { expressAdapter } from '../src/express'
-import { TapeDelay } from '@stompbox/tape-delay';
-import { tapeDelayContext } from '../src/tape-delay';
-import { EndpointDTOs } from '../src/api-adapter-types';
+import { EndpointContracts } from '../src/api-adapter-types';
+import { newContainer } from '@stompbox/tape-delay';
 
-const upperCase = springReverb(
-  z.object({ string: z.string(), secondString: z.string() }),
-  z.object({ stringInUpperCase: z.string() }),
-  (x) => ({ stringInUpperCase: `${x.string.toUpperCase()} ${x.secondString.toUpperCase()}` })
+const upperCase = createHandler(
+  {
+    input: z.object({ string: z.string(), secondString: z.string() }),
+    output: z.object({ stringInUpperCase: z.string() }),
+  }, 
+  ({ secondString, string }) => { 
+    return { stringInUpperCase: `${string.toUpperCase()} ${secondString.toUpperCase()}` } 
+  }
 )
 
 test('Express adapter', async () => {
   const app = express();
 
-  const expressEndpoint = expressAdapter(upperCase, (schema) => ({
-      querySchema: schema
-    }),
-    x => x
+  const expressEndpoint = expressAdapter(
+    upperCase, 
+    (querySchema) => ({ querySchema })
   )
-
   
   app.get('/', expressEndpoint);
 
-  type A = EndpointDTOs<typeof expressEndpoint>
+  type A = EndpointContracts<typeof expressEndpoint>
 
   const server = await new Promise<ReturnType<typeof app.listen>>((resolve) => {
     const s = app.listen(0, () => resolve(s));
@@ -51,12 +52,11 @@ test('Next adapter', async () => {
     upperCase, 
     (schema) => ({ 
       bodySchema: schema.pick({ secondString: true }),
-      querySchema: schema.pick({ string: true }),
-    }), 
-    x => x
+      querySchema: schema.omit({ secondString: true }),
+    }),
   )
 
-  type A = EndpointDTOs<typeof NextRoute>
+  type A = EndpointContracts<typeof NextRoute>
 
   const data = await NextRoute(new NextRequest('http://localhost.mock.url:3000?string=hello', {
     body: JSON.stringify({ secondString: 'world' }),
@@ -67,13 +67,22 @@ test('Next adapter', async () => {
 });
 
 test('Tape delay', async () => {
-  class S { sayHi = () => 'hi' }
-  const f = new TapeDelay({S})
-  const t = await tapeDelayContext(f)('S')(
-    z.number(), z.string(),
-    (input, { s }) => {
-      return input + ' ' + s.sayHi()
+  class RandomNumber { getNumber = () => Math.random() }
+  const container = newContainer({ RandomNumber })
+
+  const f = createHandler(
+    {
+      input: z.number(),
+      output: z.number(),
+      getContext: container.resolve
+    },
+    async (i, ctx) => {
+      return i + ctx.randomNumber.getNumber()
     }
-  ).unsafe(22)
-  expect(t).toBe('22 hi')
+  )
+
+  const result = await f.unsafe(2)
+
+  expect(result).toBeGreaterThan(2)
+  expect(result).toBeLessThan(3)
 })
