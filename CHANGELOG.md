@@ -1,3 +1,15 @@
+# [10.0.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v9.0.0...v10.0.0) (2026-04-28)
+
+
+### Features
+
+* new API ([ed3978a](https://github.com/alevnyacow/stompbox-spring-reverb/commit/ed3978af1d90387f6a7c55f144347e91ab99375e))
+
+
+### BREAKING CHANGES
+
+* new contracts
+
 # [9.0.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v8.0.0...v9.0.0) (2026-04-27)
 
 
