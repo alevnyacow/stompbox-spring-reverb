@@ -59,7 +59,7 @@ try {
 }
 ```
 
-### Usage with Next
+### Usage with Next.JS
 
 ```ts
 // app/api/some/path/route.ts
@@ -68,15 +68,15 @@ import { nextAdapter } from '@stompbox/spring-reverb/next'
 import type { EndpointContracts } from '@stompbox/spring-reverb'
 import { greet } from '@/use-cases'
 
-export const PUT = nextAdapter(
-    // handler
-    greet,
-    // description of API endpoint request
-    (inputSchema) => ({
-        querySchema: inputSchema.pick({ firstName: true }),
-        bodySchema: inputSchema.omit({ firstName: true })
+export const PUT = greet
+    .REST(nextAdapter)
+    .customSchema((inputSchema) => {
+        return {
+            querySchema: inputSchema.pick({ firstName: true }),
+            bodySchema: inputSchema.omit({ firstName: true })
+        }
     })
-)
+
 
 // request and response DTOs, can be used on client
 /**
@@ -106,13 +106,14 @@ import { expressAdapter } from '@stompbox/spring-reverb/express'
 import type { EndpointContracts } from '@stompbox/spring-reverb'
 import { greet } from '@/use-cases'
 
-const PUT = expressAdapter(
-    greet,
-    // short-handed pick variant
-    ({ pick, omit }) => ({
-        querySchema: pick({ firstName: true }),
-        bodySchema: omit({ firstName: true })
-    }),
+export const PUT = greet
+    .REST(expressAdapter)
+    .customSchema((inputSchema) => {
+        return {
+            querySchema: inputSchema.pick({ firstName: true }),
+            bodySchema: inputSchema.omit({ firstName: true })
+        }
+    })
 )
 
 export type PUTEndpoint = EndpointContracts<typeof PUT>
@@ -130,10 +131,16 @@ app.put('/greet', PUT)
 ### Creating a handler with context
 
 ```ts
+import z from 'zod'
 import { createHandler } from '@stompbox/spring-reverb'
 
+const userSchema = z.object({
+    id: z.string(), 
+    name: z.string()
+})
+
 class UserRepository {
-    findById = async (id: string) => {
+    findById = async (id: string): z.infer<userSchema> | null => {
         if (Math.random() > 0.5) {
             return { id, name: 'Dummy user' } 
         }
@@ -143,10 +150,7 @@ class UserRepository {
 
 const findUser = createHandler({
     input: z.string(),
-    output: z.object({ 
-        id: z.string(), 
-        name: z.string() 
-    }).nullable(),
+    output: userSchema.nullable(),
     getContext: () => ({ userRepository: new UserRepository() }),   
     handler: async (id, ({ userRepository })) => {
         return userRepository.findById(id)

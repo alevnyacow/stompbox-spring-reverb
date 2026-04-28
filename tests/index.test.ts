@@ -19,10 +19,7 @@ const upperCase = createHandler({
 test('Express adapter', async () => {
   const app = express();
 
-  const expressEndpoint = expressAdapter(
-    upperCase, 
-    (querySchema) => ({ querySchema })
-  )
+  const expressEndpoint = upperCase.REST(expressAdapter).allInQuery()
   
   app.get('/', expressEndpoint);
 
@@ -46,13 +43,12 @@ test('Express adapter', async () => {
 });
 
 test('Next adapter', async () => {
-  const NextRoute = nextAdapter(
-    upperCase, 
-    (schema) => ({ 
-      bodySchema: schema.pick({ secondString: true }),
-      querySchema: schema.omit({ secondString: true }),
-    }),
-  )
+  const NextRoute = upperCase.REST(nextAdapter).customSchema(({pick, omit}) => {
+    return {
+      bodySchema: pick({ secondString: true }),
+      querySchema: omit({ secondString: true }),
+    }
+  })
 
   type A = EndpointContracts<typeof NextRoute>
 
