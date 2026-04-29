@@ -2,6 +2,7 @@ import z, { ZodObject, ZodString, ZodType } from "zod";
 import { Limiter, enrichDetails } from '@stompbox/limiter'
 import { zodErrorDetails } from '@stompbox/limiter/zod'
 import { APIDataAdapter, APIInputSchemas } from "./api-adapter-types";
+import { _Middleware, compose, SpringContext } from "./handler-utils";
 
 enum SpringReverbErrorCodes {
     INVALID_INPUT = 'SPRING-REVERB___INVALID-INPUT',
@@ -24,59 +25,156 @@ export type SpringReverbHandler<InputSchema extends ZodType, OutputSchema extend
 
 export class SpringReverbError extends Limiter(SpringReverbErrorCodes) {}
 
-const springReverbBase = <Input extends ZodType, Output extends ZodType, Context = void>(
-    inputSchema: Input, 
+export type PreHandlerMiddleware<Input = void, Ctx = void> = (
+    ctx: { parsedInput: Input, error?: Error, context: Ctx },
+    next: () => Promise<void>
+) => Promise<void>
+
+export type AfterHandlerMiddleware<Input = void, Output = void, Ctx = void> = (
+    ctx: { parsedInput: Input, context: Ctx, output: Output },
+    next: () => Promise<void>
+) => Promise<void>
+
+const springReverbBase = <
+    Input extends ZodType,
+    Output extends ZodType,
+    Context = void
+>(
+    inputSchema: Input,
     outputSchema: Output,
     handler:
-    // Without context
-    | ((x: z.infer<Input>) => z.infer<Output> | Promise<z.infer<Output>>)
-    // With context
-    | {
-        getContext: () => Promise<Context> | Context,
-        handler: (x: z.infer<Input>, ctx: Context) => z.infer<Output> | Promise<z.infer<Output>>
-    },
-    sourceForErrorDetails?: string
+        | ((x: z.infer<Input>) => z.infer<Output> | Promise<z.infer<Output>>)
+        | {
+              getContext: () => Promise<Context> | Context
+              handler: (
+                  x: z.infer<Input>,
+                  ctx: Context
+              ) => z.infer<Output> | Promise<z.infer<Output>>
+          },
+    sourceForErrorDetails?: string,
+    preHandler: PreHandlerMiddleware<z.infer<Input>, Context>[] = [],
+    afterHandler: AfterHandlerMiddleware<z.infer<Input>, z.infer<Output>, Context>[] = [],
+    onError: ((x: Error) => (void | Promise<void>))[] = []
 ) => {
-    const logic = async (input: z.infer<Input>): Promise<SpringReverbHandlerResponse<Output>> => {
+    const coreMiddleware: _Middleware<
+        z.infer<Input>,
+        z.infer<Output>,
+        Context
+    > = async (ctx, next) => {
         try {
-            const parsedInput = inputSchema.safeParse(input)
+            const parsedInput = inputSchema.safeParse(ctx.rawInput)
             if (!parsedInput.success) {
-                throw new SpringReverbError('INVALID_INPUT', enrichDetails.withSource(sourceForErrorDetails)(
-                    enrichDetails.withTimespamp(
-                        zodErrorDetails(parsedInput.error)
-                    )
-                ))
-            }
-            const output = 'getContext' in handler 
-                ? await handler.handler(parsedInput.data, await handler.getContext()) 
-                : await handler(parsedInput.data)
-            const parsedOutput = outputSchema.safeParse(output)
-            if (!parsedOutput.success) {
-                throw new SpringReverbError('INVALID_OUTPUT', enrichDetails.withSource(sourceForErrorDetails)(
-                    enrichDetails.withTimespamp(
-                        zodErrorDetails(parsedOutput.error))
+                throw new SpringReverbError(
+                    'INVALID_INPUT',
+                    enrichDetails.withSource(sourceForErrorDetails)(
+                        enrichDetails.withTimespamp(
+                            zodErrorDetails(parsedInput.error)
+                        )
                     )
                 )
             }
-            return { success: true, output: parsedOutput.data }
-        } catch (e: unknown) {
-            if (e instanceof Error) {
-                return { success: false, error: e }
+
+            ctx.parsedInput = parsedInput.data
+
+            if (typeof handler === 'object' && 'getContext' in handler) {
+                ctx.context = await handler.getContext()
             }
-            const error = new SpringReverbError('UNHANDLED_EXCEPTION', enrichDetails.fromUnknownData(e)())
-            return { 
-                success: false, 
-                error,
-            }
+
+            await next()
+        } catch (e: any) {
+            ctx.error =
+                e instanceof Error
+                    ? e
+                    : new SpringReverbError(
+                          'UNHANDLED_EXCEPTION',
+                          enrichDetails.fromUnknownData(e)()
+                      )
+
+            for (const errorHandler of onError) {
+                await errorHandler(ctx.error)
+            }           
+            
         }
     }
 
-    const unsafe = async (input: z.infer<Input>): Promise<z.infer<Output>> => {
-        const result = await logic(input)
-        if (result.success) {
-            return result.output
+    const handlerMiddleware: _Middleware<
+        z.infer<Input>,
+        z.infer<Output>,
+        Context
+    > = async (ctx, next) => {
+        if (ctx.error) return
+
+        try {
+            if (typeof handler === 'function') {
+                const result = await handler(ctx.parsedInput!)
+                const parsedOutput = outputSchema.safeParse(result)
+                if (!parsedOutput.success) {
+                    throw new SpringReverbError(
+                        'INVALID_OUTPUT',
+                        enrichDetails.withSource(sourceForErrorDetails)(
+                            enrichDetails.withTimespamp(
+                                zodErrorDetails(parsedOutput.error)
+                            )
+                        )
+                    )
+                }
+                ctx.output = parsedOutput.data
+            } else {
+                const result = await handler.handler(
+                    ctx.parsedInput!,
+                    ctx.context as Context
+                )
+                const parsedOutput = outputSchema.safeParse(result)
+                if (!parsedOutput.success) {
+                    throw new SpringReverbError(
+                        'INVALID_OUTPUT',
+                        enrichDetails.withSource(sourceForErrorDetails)(
+                            enrichDetails.withTimespamp(
+                                zodErrorDetails(parsedOutput.error)
+                            )
+                        )
+                    )
+                }
+                ctx.output = parsedOutput.data
+            }
+        } catch (e: any) {
+            ctx.error = e
         }
-        throw result.error
+
+        await next()
+    }
+
+    const pipeline = compose([
+        coreMiddleware,
+        ...preHandler,
+        handlerMiddleware,
+        ...afterHandler
+    ], async (e) => { console.error('eee', e) })
+
+    const logic = async (
+        input: z.infer<Input>
+    ): Promise<SpringReverbHandlerResponse<Output>> => {
+        const ctx: SpringContext<
+            z.infer<Input>,
+            z.infer<Output>,
+            Context
+        > = {
+            rawInput: input
+        }
+
+        await pipeline(ctx)
+
+        if (ctx.error) {
+            return { success: false, error: ctx.error }
+        }
+
+        return { success: true, output: ctx.output! }
+    }
+
+    const unsafe = async (input: z.infer<Input>) => {
+        const result = await logic(input)
+        if (!result.success) throw result.error
+        return result.output
     }
 
     const REST = <RESTInput extends unknown[], RESTOutput>(adapter: APIDataAdapter<RESTInput, RESTOutput>) => {
@@ -150,12 +248,18 @@ const springReverbBase = <Input extends ZodType, Output extends ZodType, Context
     return result
 }
 
+
 export function createHandler<Input extends ZodType, Output extends ZodType, Context>(
     base: {
         input: Input,
         output: Output,
         getContext: () => (Context | Promise<Context>),
-        handler: (input: z.infer<Input>, ctx: Context) => Promise<z.infer<Output>> | z.infer<Output>
+        handler: (input: z.infer<Input>, ctx: Context) => Promise<z.infer<Output>> | z.infer<Output>,
+        middlewares?: {
+            beforeHandler?: Array<PreHandlerMiddleware<z.infer<Input>, void>>,
+            afterHandler?: AfterHandlerMiddleware<z.infer<Input>, z.infer<Output>, Context>[],
+            onError?: ((e: Error) => void | Promise<void>)[] 
+        },
     },
     additionalMetadata?: {
         sourceForErrorDetails?: string
@@ -167,6 +271,11 @@ export function createHandler<Input extends ZodType, Output extends ZodType>(
         input: Input,
         output: Output,
         handler: (input: z.infer<Input>) => Promise<z.infer<Output>> | z.infer<Output>,
+        middlewares?: {
+            beforeHandler?: Array<PreHandlerMiddleware<z.infer<Input>, void>>,
+            afterHandler?: AfterHandlerMiddleware<z.infer<Input>, z.infer<Output>>[],
+            onError?: ((e: Error) => void | Promise<void>)[] 
+        }
     },
     additionalMetadata?: {
         sourceForErrorDetails?: string
@@ -178,6 +287,9 @@ export function createHandler(metadata: any, additionalMetadata: any) {
         metadata.input,
         metadata.output,
         metadata.getContext ? { getContext: metadata.getContext, handler: metadata.handler } : metadata.handler,
-        additionalMetadata?.sourceForErrorDetails
+        additionalMetadata?.sourceForErrorDetails,
+        metadata?.middlewares?.beforeHandler,
+        metadata?.middlewares?.afterHandler,
+        metadata?.middlewares?.onError
     )
 }
