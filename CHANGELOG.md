@@ -1,3 +1,15 @@
+# [11.0.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v10.1.0...v11.0.0) (2026-04-29)
+
+
+### Features
+
+* default REST method implementation ([4bbe27b](https://github.com/alevnyacow/stompbox-spring-reverb/commit/4bbe27bf30756f41dd7fbb69c22104a26fd38446))
+
+
+### BREAKING CHANGES
+
+* new simplified contracts
+
 # [10.1.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v10.0.0...v10.1.0) (2026-04-29)
 
 
