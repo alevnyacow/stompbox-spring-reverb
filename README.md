@@ -14,16 +14,20 @@ export const greet = createHandler({
     // input schema
     input: z.object({
         firstName: z.string(), 
-        lastName: z.string() 
+        lastName: z.string(),
+        greetingOptions: z.object({
+            start: z.enum(['Hello', 'Hi'])
+        })
     }),
     // output schema
     output: z.object({ 
         greetingText: z.string() 
     }),
     // handler, can be async
-    handler: ({ firstName, lastName }) => {
+    handler: ({ firstName, lastName, greetingOptions }) => {
+        const start = `${greetingOptions.start}, `
         return {
-            greetingText: `Hello, ${firstName} ${lastName}!`
+            greetingText: `${start}${firstName} ${lastName}!`
         }
     }
 })
@@ -36,7 +40,10 @@ export const greet = createHandler({
 
 const safeResult = await greet({
     firstName: 'Player',
-    lastName: 'one'
+    lastName: 'one',
+    greetingOptions: {
+        start: 'Hello'
+    }
 })
 
 if (safeResult.success) {
@@ -51,7 +58,10 @@ if (safeResult.success) {
 try {
     const { greetingText } = await greet.unsafe({
         firstName: 'Player',
-        lastName: 'one'
+        lastName: 'one',
+        greetingOptions: {
+            start: 'Hello'
+        }
     })
     console.log(greetingText)
 } catch (e) {
@@ -59,7 +69,11 @@ try {
 }
 ```
 
-### Usage with Next.JS
+### Usage with REST API (Next example)
+
+#### Default schemas
+
+By default, all primitives are passed via query parameters and all objects/arrays are passed via body.
 
 ```ts
 // app/api/some/path/route.ts
@@ -68,61 +82,43 @@ import { nextAdapter } from '@stompbox/spring-reverb/next'
 import type { EndpointContracts } from '@stompbox/spring-reverb'
 import { greet } from '@/use-cases'
 
-export const PUT = greet
-    .REST(nextAdapter)
-    .customSchema((inputSchema) => {
-        return {
-            querySchema: inputSchema.pick({ firstName: true }),
-            bodySchema: inputSchema.omit({ firstName: true })
-        }
-    })
-
+export const PUT = greet.REST(nextAdapter)
 
 // request and response DTOs, can be used on client
 /**
  * {
  *     requestDetails: {
- *         query: { firstName: string },
- *         body: { lastName: string }
+ *         query: { 
+ *             lastName: string, 
+ *             firstName: string 
+ *         },
+ *         body: { 
+ *             greetingOptions: { 
+ *                 start: 'Hello' | 'Hi'
+ *             } 
+ *         }
+ *     },
+ *     requestDTO: { 
+ *         firstName: string, 
+ *         lastName: string,
+ *         greetingOptions: {
+ *             start: 'Hello' | 'Hi'
+ *         }
+ *     },
+ *     responseDTO: { 
+ *         greetingText: string 
  *     }
- *     requestDTO: { firstName: string, lastName: string },
- *     responseDTO: { greetingText: string }
  * }
  */
 export type PUTEndpoint = EndpointContracts<typeof PUT>
 
 /**
- * PUT /api/some/path?firstName=Player 
- * Body: { lastName: 'one' } 
+ * PUT /api/some/path?firstName=Player&lastName=one
  * 
- * => { greetingText: 'Hello, Player one!' }
- */ 
-```
-
-### Usage with Express
-
-```ts
-import { expressAdapter } from '@stompbox/spring-reverb/express'
-import type { EndpointContracts } from '@stompbox/spring-reverb'
-import { greet } from '@/use-cases'
-
-export const PUT = greet
-    .REST(expressAdapter)
-    .customSchema((inputSchema) => {
-        return {
-            querySchema: inputSchema.pick({ firstName: true }),
-            bodySchema: inputSchema.omit({ firstName: true })
-        }
-    })
-)
-
-export type PUTEndpoint = EndpointContracts<typeof PUT>
-
-app.put('/greet', PUT)
-
-/**
- * PUT /greet?firstName=Player 
- * Body: { lastName: 'one' } 
+ * Body:
+ * ```
+ * { greetingOptions: { start: 'Hello' } }
+ * ```
  * 
  * => { greetingText: 'Hello, Player one!' }
  */ 

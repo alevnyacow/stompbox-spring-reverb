@@ -1,7 +1,7 @@
 import z, { ZodObject, ZodString, ZodType } from "zod";
 import { Limiter, enrichDetails } from '@stompbox/limiter'
 import { zodErrorDetails } from '@stompbox/limiter/zod'
-import { APIDataAdapter, APIInputSchemas } from "./api-adapter-types";
+import { APIDataAdapter, APIInputSchemas, ComplexZodSchemaPart, PrimitiveZodSchemaPart } from "./api-adapter-types";
 import { _Middleware, compose, SpringContext } from "./handler-utils";
 
 enum SpringReverbErrorCodes {
@@ -178,63 +178,94 @@ const springReverbBase = <
     }
 
     const REST = <RESTInput extends unknown[], RESTOutput>(adapter: APIDataAdapter<RESTInput, RESTOutput>) => {
-        return {
-            allInQuery: () => {
-                const handler = async (...input: RESTInput) => {
-                    const { query } = await adapter.dataObtainer(...input)
-                    const inputData = inputSchema.parse(query)
-                    const result = await logic(inputData)
-                    return adapter.responseMapper(result, ...input)
-                }
-                return Object.assign(handler, { ___api_metadata: { querySchema: inputSchema, response: outputSchema } })
-            },
+        const defaultSchema = () => {
+                const schema = (inputSchema as any as ZodObject)
 
-            allInBody: () => {
-                const handler = async (...input: RESTInput) => {
-                    const { body } = await adapter.dataObtainer(...input)
-                    const inputData = inputSchema.parse(body)
-                    const result = await logic(inputData)
-                    return adapter.responseMapper(result, ...input)
-                }
-                return Object.assign(handler, { ___api_metadata: { bodySchema: inputSchema, response: outputSchema } })
-            },
+                const stringFields = Object.entries(schema.shape).filter(x => x[1].type === 'string').map(x => x[0])
+                const numericFields = Object.entries(schema.shape).filter(x => x[1].type === 'number').map(x => x[0])
+                const booleanFields = Object.entries(schema.shape).filter(x => x[1].type === 'boolean').map(x => x[0])
+                const dateFields = Object.entries(schema.shape).filter(x => x[1].type === 'date').map(x => x[0])
 
-            customSchema: <
-                QuerySchema extends ZodObject<Record<string, ZodString>> | undefined, 
-                BodySchema extends ZodObject | undefined
-            >(
-                schemasGenerator: Input extends ZodObject ? APIInputSchemas<Input, QuerySchema, BodySchema> : never,
-                inputMapping?: (x: z.infer<QuerySchema> & z.infer<BodySchema>) => z.infer<Input>
-            ) => {
-                // @ts-ignore
-                const schemas = schemasGenerator(inputSchema)
+                let querySchema = z.object({})
+
+                for (const str of stringFields) {
+                    querySchema = querySchema.extend({ [str]: z.string() })
+                }
+                for (const num of numericFields) {
+                    querySchema = querySchema.extend({ [num]: z.coerce.number() })
+                }
+                for (const bool of booleanFields) {
+                    querySchema = querySchema.extend({ [bool]: z.coerce.boolean() })
+                }
+                for (const date of dateFields) {
+                    querySchema = querySchema.extend({ [date]: z.coerce.date() })
+                }
+
+                type Query = PrimitiveZodSchemaPart<Input extends ZodObject ? Input : ZodObject>
+                type Body = ComplexZodSchemaPart<Input extends ZodObject ? Input : ZodObject>
+
+                const objectFields = Object.entries(schema.shape).filter(x => x[1].type === 'object').map(x => x[0])
+                const arrayFields = Object.entries(schema.shape).filter(x => x[1].type === 'array').map(x => x[0])
+
+                const bodySchema = schema.pick(
+                    // @ts-ignore
+                    Object.fromEntries([...objectFields, ...arrayFields].map(x => ([x, true as const])))
+                )
+
+                type ResultSchemas = (Query extends never ? {} : { querySchema: Query }) & (Body extends never ? {} : { bodySchema: Body }) & { response: Output }
 
                 const handler = async (...i: RESTInput) => {
                     const { body, query } = await adapter.dataObtainer(...i)
-                    let inputData: Record<string, any> = {}
-
-                    if ('querySchema' in schemas) {
-                        const queryParamsParsed = schemas.querySchema.parse(query);
-
-                        inputData = { ...inputData, ...queryParamsParsed }
-                    }
-
-                    if ('bodySchema' in schemas) {
-                        const bodyParsed = schemas.bodySchema.parse(body)
-
-                        inputData = {...inputData, ...bodyParsed}
-                    }
-
-                    const resultInput = inputMapping 
-                        ? inputMapping(inputData as z.infer<QuerySchema> & z.infer<BodySchema>) 
-                        : inputData as z.infer<Input>
-
-                    const result = await logic(resultInput)
+                    const input = { ...bodySchema.parse(body), ...querySchema.parse(query) }
+                    const result = await logic(input as z.infer<Input>)
                     return await adapter.responseMapper(result, ...i)
                 }
-                return Object.assign(handler, { ___api_metadata: { ...schemas, response: outputSchema } })
-            }
+
+                return Object.assign(handler, { ___api_metadata: {
+                    querySchema,
+                    bodySchema,
+                    response: outputSchema
+                } as unknown as ResultSchemas })
         }
+
+        const customSchema = <
+            QuerySchema extends ZodObject<Record<string, ZodString>> | undefined, 
+            BodySchema extends ZodObject | undefined
+        >(
+            schemasGenerator: Input extends ZodObject ? APIInputSchemas<Input, QuerySchema, BodySchema> : never,
+            inputMapping?: (x: z.infer<QuerySchema> & z.infer<BodySchema>) => z.infer<Input>
+        ) => {
+            // @ts-ignore
+            const schemas = schemasGenerator(inputSchema)
+
+            const handler = async (...i: RESTInput) => {
+                const { body, query } = await adapter.dataObtainer(...i)
+                let inputData: Record<string, any> = {}
+
+                if ('querySchema' in schemas) {
+                    const queryParamsParsed = schemas.querySchema.parse(query);
+
+                    inputData = { ...inputData, ...queryParamsParsed }
+                }
+
+                if ('bodySchema' in schemas) {
+                    const bodyParsed = schemas.bodySchema.parse(body)
+
+                    inputData = {...inputData, ...bodyParsed}
+                }
+
+                const resultInput = inputMapping 
+                    ? inputMapping(inputData as z.infer<QuerySchema> & z.infer<BodySchema>) 
+                    : inputData as z.infer<Input>
+
+                const result = await logic(resultInput)
+                return await adapter.responseMapper(result, ...i)
+            }
+            return Object.assign(handler, { ___api_metadata: { ...schemas, response: outputSchema } })
+        }
+
+        const handler = defaultSchema()
+        return Object.assign(handler, { customSchema })
     }
 
     const result = Object.assign(logic, { 
@@ -247,7 +278,6 @@ const springReverbBase = <
 
     return result
 }
-
 
 export function createHandler<Input extends ZodType, Output extends ZodType, Context>(
     base: {

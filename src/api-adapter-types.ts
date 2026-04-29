@@ -1,4 +1,4 @@
-import z, { ZodObject, ZodString } from "zod"
+import z, { ZodBoolean, ZodDate, ZodNumber, ZodObject, ZodString } from "zod"
 import { SpringReverbHandlerResponse } from "./handler"
 
 export type APIInputSchemas<
@@ -17,13 +17,16 @@ type WithAPIMetadata<QuerySchema extends ZodObject<Record<string, ZodString>> | 
     ___api_metadata: { querySchema?: QuerySchema, bodySchema?: BodySchema, response: Response }
 }
 
+
 export type EndpointContracts<Metadata extends WithAPIMetadata<any, any, any>> = {
-    requestDetails: {
-        body: z.infer<Metadata['___api_metadata']['bodySchema']>,
-        query: z.infer<Metadata['___api_metadata']['querySchema']>,
-    },
+    requestDetails: 
+        (unknown extends z.infer<Metadata['___api_metadata']['bodySchema']> 
+            ? {} : { body: z.infer<Metadata['___api_metadata']['bodySchema']> })
+            &
+        (unknown extends z.infer<Metadata['___api_metadata']['querySchema']>
+            ? {} : { query: z.infer<Metadata['___api_metadata']['querySchema']> }),
     requestDTO: z.infer<Metadata['___api_metadata']['bodySchema']> & z.infer<Metadata['___api_metadata']['querySchema']>,
-    responseDTO: z.infer<Metadata['___api_metadata']['response']>,
+    responseDTO: z.infer<Metadata['___api_metadata']['response']>
 }
 
 type APIRequestDataObtainer<
@@ -35,3 +38,55 @@ export type APIDataAdapter<Input extends unknown[], Output> = {
     dataObtainer: APIRequestDataObtainer<Input>,
     responseMapper: (x: SpringReverbHandlerResponse<any>, ...input: Input) => Output | Promise<Output>
 }
+
+type StringKeys<T> = {
+  [K in keyof T]: T[K] extends string ? K : never;
+}[keyof T];
+
+type NumericKeys<T> = {
+    [K in keyof T]: T[K] extends number ? K : never;
+}[keyof T];
+
+type BooleanKeys<T> = {
+    [K in keyof T]: T[K] extends boolean ? K : never;
+}[keyof T];
+
+type DateKeys<T> = {
+    [K in keyof T]: T[K] extends Date ? K : never;
+}[keyof T];
+
+export type PrimitiveZodSchemaPart<T extends ZodObject> = 
+    StringKeys<z.infer<T>> 
+    | NumericKeys<z.infer<T>> 
+    | BooleanKeys<z.infer<T>> 
+    | DateKeys<z.infer<T>> extends never 
+        ? never 
+        : ZodObject<
+            & Record<StringKeys<z.infer<T>>, ZodString> 
+            & Record<NumericKeys<z.infer<T>>, ZodNumber> 
+            & Record<BooleanKeys<z.infer<T>>, ZodBoolean>
+            & Record<DateKeys<z.infer<T>>, ZodDate>
+        >
+    
+export type ComplexZodSchemaKeys<T extends ZodObject> = Exclude<keyof z.infer<T>, keyof PrimitiveZodSchemaPart<T>['shape']>
+
+
+export type ComplexZodSchemaPart<T extends ZodObject> = 
+    T extends ZodObject<infer Shape> 
+    ? ComplexZodSchemaKeys<T> extends never 
+        ? never 
+        // @ts-ignore
+        : ZodObject<Pick<Shape, ComplexZodSchemaKeys<T>>> 
+    : never
+
+
+const fff = z.object({ asfsaf: z.number(), fasfsa: z.string(), fafsfaaa: z.array(z.nan()) })
+
+
+type FFF = ComplexZodSchemaPart<typeof fff>
+
+
+const s: PrimitiveZodSchemaPart<typeof fff> = z.object({
+    asfsaf: z.number(),
+    fasfsa: z.string()
+})

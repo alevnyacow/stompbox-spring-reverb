@@ -4,8 +4,8 @@ import { APIDataAdapter } from './api-adapter-types'
 export const expressAdapter: APIDataAdapter<[req: Request, res: Response], void> = {
     dataObtainer: (req) => {
         return {
-            query: req.query,
-            body: req.body
+            query: req.query || {},
+            body: req.body || {}
         }
     },
     responseMapper: (response, _req, res) => {

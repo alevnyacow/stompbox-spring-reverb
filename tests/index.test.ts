@@ -12,10 +12,6 @@ const upperCase = createHandler({
   input: z.object({ string: z.string(), secondString: z.string() }),
   output: z.object({ stringInUpperCase: z.string() }),
   getContext: () => { return { ffsa: 24 } },
-  middlewares: {
-    beforeHandler: [async (x, next) => { console.log('pre'); console.log(x); await next() }],
-    afterHandler: [async (x, next) => { console.log('post'); console.log(x); await next() }],
-  },
   handler: ({ secondString, string }) => { 
     return { stringInUpperCase: `${string.toUpperCase()} ${secondString.toUpperCase()}` } 
   }
@@ -24,7 +20,7 @@ const upperCase = createHandler({
 test('Express adapter', async () => {
   const app = express();
 
-  const expressEndpoint = upperCase.REST(expressAdapter).allInQuery()
+  const expressEndpoint = upperCase.REST(expressAdapter)
   
   app.get('/', expressEndpoint);
 
