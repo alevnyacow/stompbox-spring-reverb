@@ -1,3 +1,10 @@
+# [10.1.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v10.0.0...v10.1.0) (2026-04-29)
+
+
+### Features
+
+* middlewares ([6f29fd1](https://github.com/alevnyacow/stompbox-spring-reverb/commit/6f29fd10f151ab44a6a548ff4bd0b1d948cd8ac1))
+
 # [10.0.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v9.0.0...v10.0.0) (2026-04-28)
 
 
