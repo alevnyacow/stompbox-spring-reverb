@@ -1,3 +1,15 @@
+# [12.0.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v11.0.0...v12.0.0) (2026-05-04)
+
+
+### Features
+
+* more ckear naming ([644be53](https://github.com/alevnyacow/stompbox-spring-reverb/commit/644be53a8e07d5bde6fe2c58f76aafc7ced49a3b))
+
+
+### BREAKING CHANGES
+
+* `unsafe` -> `orThrow`
+
 # [11.0.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v10.1.0...v11.0.0) (2026-04-29)
 
 
