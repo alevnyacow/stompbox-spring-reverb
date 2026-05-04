@@ -56,7 +56,7 @@ if (safeResult.success) {
  * unsafe approach that can throw an exception
  */ 
 try {
-    const { greetingText } = await greet.unsafe({
+    const { greetingText } = await greet.orThrow({
         firstName: 'Player',
         lastName: 'one',
         greetingOptions: {

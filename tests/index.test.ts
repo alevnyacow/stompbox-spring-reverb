@@ -72,7 +72,7 @@ test('Tape delay', async () => {
     handler: (i, ctx) => i + ctx.randomNumber.getNumber()
   })
 
-  const result = await f.unsafe(2)
+  const result = await f.orThrow(2)
 
   expect(result).toBeGreaterThan(2)
   expect(result).toBeLessThan(3)

@@ -171,7 +171,7 @@ const springReverbBase = <
         return { success: true, output: ctx.output! }
     }
 
-    const unsafe = async (input: z.infer<Input>) => {
+    const orThrow = async (input: z.infer<Input>) => {
         const result = await logic(input)
         if (!result.success) throw result.error
         return result.output
@@ -272,7 +272,7 @@ const springReverbBase = <
         inputSchema, 
         outputSchema, 
         sourceForErrorDetails, 
-        unsafe,
+        orThrow,
         REST
     })
 
