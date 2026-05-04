@@ -65,7 +65,7 @@
     "typescript": "^6.0.2"
   },
   "dependencies": {
-    "@stompbox/limiter": "^4.8.1",
+    "@stompbox/limiter": "^4.10.0",
     "zod": "^4.3.6"
   },
   "peerDependencies": {

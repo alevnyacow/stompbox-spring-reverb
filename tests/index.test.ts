@@ -7,12 +7,20 @@ import express from 'express'
 import { expressAdapter } from '../src/express'
 import { EndpointContracts } from '../src/api-adapter-types';
 import { newContainer } from '@stompbox/tape-delay';
+import { enrichDetails, Limiter } from '@stompbox/limiter'
+
+const TestError = Limiter({
+  test: { defaultDetails: enrichDetails.withResponseStatusCode(404)(), name: 'not_found' }
+})
 
 const upperCase = createHandler({
   input: z.object({ string: z.string(), secondString: z.string() }),
   output: z.object({ stringInUpperCase: z.string() }),
   getContext: () => { return { ffsa: 24 } },
   handler: ({ secondString, string }) => { 
+    if (string === 'THROW_ERROR') {
+      throw new TestError('test')
+    }
     return { stringInUpperCase: `${string.toUpperCase()} ${secondString.toUpperCase()}` } 
   }
 })
@@ -39,6 +47,15 @@ test('Express adapter', async () => {
   const json = await result.json();
 
   expect(json).toEqual({ stringInUpperCase: 'HELLO WORLD' })
+
+
+  const result2 = await fetch(
+    `http://localhost:${port}?string=THROW_ERROR&secondString=world`
+  );
+
+  const status = result2.status;
+
+  expect(status).toBe(404)
 
   server.close();
 });

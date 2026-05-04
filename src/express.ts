@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import { APIDataAdapter } from './api-adapter-types'
+import { commonDetails } from '@stompbox/limiter'
 
 export const expressAdapter: APIDataAdapter<[req: Request, res: Response], void> = {
     dataObtainer: (req) => {
@@ -13,6 +14,9 @@ export const expressAdapter: APIDataAdapter<[req: Request, res: Response], void>
             res.send(response.output)
             return
         }
-        res.status(500).send(response.error)
+
+        const errorCode = commonDetails(response.error).responseStatusCode ?? 500
+
+        res.status(errorCode).send(errorCode.toString().startsWith('4') ? response.error : {})
     }
 }

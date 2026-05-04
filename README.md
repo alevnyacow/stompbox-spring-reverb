@@ -11,7 +11,6 @@ import { createHandler } from '@stompbox/spring-reverb'
 import z from 'zod'
 
 export const greet = createHandler({
-    // input schema
     input: z.object({
         firstName: z.string(), 
         lastName: z.string(),
@@ -19,11 +18,9 @@ export const greet = createHandler({
             start: z.enum(['Hello', 'Hi'])
         })
     }),
-    // output schema
     output: z.object({ 
         greetingText: z.string() 
     }),
-    // handler, can be async
     handler: ({ firstName, lastName, greetingOptions }) => {
         const start = `${greetingOptions.start}, `
         return {

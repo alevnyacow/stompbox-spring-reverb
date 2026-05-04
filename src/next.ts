@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { APIDataAdapter } from './api-adapter-types'
+import { commonDetails } from '@stompbox/limiter'
 
 /**
  * Plain `jsonResponse` working without NextResponse extension. 
@@ -43,6 +44,8 @@ export const nextAdapter: APIDataAdapter<[request: NextRequest], NextResponse> =
         if (x.success) {
             return jsonResponse(x.output)
         }
-        return jsonResponse(x.error, { status: 500 })
+        const errorCode = commonDetails(x.error).responseStatusCode ?? 500
+
+        return jsonResponse(errorCode.toString().startsWith('4') ? x.error : {}, { status: errorCode })
     }
 }
