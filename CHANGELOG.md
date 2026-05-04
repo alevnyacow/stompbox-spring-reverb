@@ -1,3 +1,10 @@
+# [12.1.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v12.0.0...v12.1.0) (2026-05-04)
+
+
+### Features
+
+* added status codes ([08f81a3](https://github.com/alevnyacow/stompbox-spring-reverb/commit/08f81a36b7b0de1ed589edff13bde6bef49a4953))
+
 # [12.0.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v11.0.0...v12.0.0) (2026-05-04)
 
 
