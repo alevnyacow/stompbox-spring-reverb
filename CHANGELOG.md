@@ -1,3 +1,10 @@
+## [12.1.3](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v12.1.2...v12.1.3) (2026-05-06)
+
+
+### Bug Fixes
+
+* added middleware example in docs ([28f6488](https://github.com/alevnyacow/stompbox-spring-reverb/commit/28f64884bef4eeee8317cd4cbdb4697195468a70))
+
 ## [12.1.2](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v12.1.1...v12.1.2) (2026-05-06)
 
 
