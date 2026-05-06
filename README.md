@@ -133,11 +133,11 @@ import { greet } from '@/use-cases'
 export const PUT = greet.REST(nextAdapter)..customSchema(
     (inputSchema) => {
         return {
-        query: inputSchema
-            .omit({ greetingOptions: true })
-            .extend({ 
-                greetingWord: z.enum(['Hello', 'Hi'])
-            })
+            query: inputSchema
+                .omit({ greetingOptions: true })
+                .extend({ 
+                    greetingWord: z.enum(['Hello', 'Hi'])
+                })
         }
     },
     (x) => ({
@@ -172,14 +172,9 @@ export const PUT = greet.REST(nextAdapter)..customSchema(
 export type PUTEndpoint = EndpointContracts<typeof PUT>
 
 /**
- * PUT /api/some/path?firstName=Player&lastName=one
+ * PUT /api/some/path?firstName=Player&lastName=one&greetingWord=Hi
  * 
- * Body:
- * ```
- * { greetingOptions: { start: 'Hello' } }
- * ```
- * 
- * => { greetingText: 'Hello, Player one!' }
+ * => { greetingText: 'Hi, Player one!' }
  */ 
 ```
 
