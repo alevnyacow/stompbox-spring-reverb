@@ -209,3 +209,41 @@ const findUser = createHandler({
 
 const result = await findUser('test-id')
 ```
+
+### Middlewares
+
+```tsx
+const upperCase = createHandler({
+  input: z.object({ string: z.string(), secondString: z.string() }),
+  output: z.object({ stringInUpperCase: z.string() }),
+  getContext: () => { return { isLoggedIn: Math.random() > 0.5 } },
+  handler: ({ secondString, string }) => { 
+    if (string === 'THROW_ERROR') {
+      throw new TestError('test')
+    }
+    return { stringInUpperCase: `${string.toUpperCase()} ${secondString.toUpperCase()}` } 
+  },
+  middlewares: {
+    beforeHandler: [
+      async ({ parsedInput, context }, next) => {
+        console.log('before', parsedInput)
+        if (!context.isLoggedIn) {
+          throw new Error('Not logged in!')
+        }
+        await next()
+      }
+    ],
+    afterHandler: [
+      async ({ context, output, parsedInput  }, next) => {
+        console.log('after', context, output, parsedInput)
+        await next()
+      }
+    ],
+    onError: [
+      async (x) => {
+        console.error('ERROR HAPPENED', x)
+      }
+    ]
+  }
+})
+```

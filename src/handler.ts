@@ -26,7 +26,7 @@ export type SpringReverbHandler<InputSchema extends ZodType, OutputSchema extend
 export class SpringReverbError extends Limiter(SpringReverbErrorCodes) {}
 
 export type PreHandlerMiddleware<Input = void, Ctx = void> = (
-    ctx: { parsedInput: Input, error?: Error, context: Ctx },
+    ctx: { parsedInput: Input, context: Ctx },
     next: () => Promise<void>
 ) => Promise<void>
 
@@ -286,7 +286,7 @@ export function createHandler<Input extends ZodType, Output extends ZodType, Con
         getContext: () => (Context | Promise<Context>),
         handler: (input: z.infer<Input>, ctx: Context) => Promise<z.infer<Output>> | z.infer<Output>,
         middlewares?: {
-            beforeHandler?: Array<PreHandlerMiddleware<z.infer<Input>, void>>,
+            beforeHandler?: Array<PreHandlerMiddleware<z.infer<Input>, Context>>,
             afterHandler?: AfterHandlerMiddleware<z.infer<Input>, z.infer<Output>, Context>[],
             onError?: ((e: Error) => void | Promise<void>)[] 
         },
