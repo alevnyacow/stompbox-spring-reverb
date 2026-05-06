@@ -1,3 +1,10 @@
+## [13.0.2](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v13.0.1...v13.0.2) (2026-05-06)
+
+
+### Bug Fixes
+
+* removed unused code ([142316f](https://github.com/alevnyacow/stompbox-spring-reverb/commit/142316f69f64e82b92d015f54c55a21473047b08))
+
 ## [13.0.1](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v13.0.0...v13.0.1) (2026-05-06)
 
 
