@@ -1,3 +1,10 @@
+## [13.0.3](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v13.0.2...v13.0.3) (2026-05-06)
+
+
+### Bug Fixes
+
+* added license ([12a1658](https://github.com/alevnyacow/stompbox-spring-reverb/commit/12a16589a8287bb970605dd0f4127a765ce84c7a))
+
 ## [13.0.2](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v13.0.1...v13.0.2) (2026-05-06)
 
 
