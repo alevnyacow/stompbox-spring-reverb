@@ -143,7 +143,7 @@ const springReverbBase = <
         ...preHandler,
         handlerMiddleware,
         ...afterHandler
-    ], async (e) => { console.error('eee', e) })
+    ])
 
     const logic = async (
         input: z.infer<Input>

@@ -18,7 +18,6 @@ export const compose = <Input, Output, Ctx>(
         | PreHandlerMiddleware<Input, Ctx> 
         | AfterHandlerMiddleware<Input, Output, Ctx>
     )[],
-    onError: (e: Error) => Promise<void> 
 ) => {
     return (ctx: SpringContext<Input, Output, Ctx>) => {
         let index = -1
@@ -36,7 +35,6 @@ export const compose = <Input, Output, Ctx>(
             }
 
             if (ctx.error) {
-                await onError(ctx.error)
                 return
             }
 
