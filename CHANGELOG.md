@@ -1,3 +1,15 @@
+# [13.0.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v12.1.3...v13.0.0) (2026-05-06)
+
+
+### Bug Fixes
+
+* simplified middlewares contract ([463089c](https://github.com/alevnyacow/stompbox-spring-reverb/commit/463089c8c7ef32bddec4624758e3ddc7cb1be7dd))
+
+
+### BREAKING CHANGES
+
+* removed next function from middlewares
+
 ## [12.1.3](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v12.1.2...v12.1.3) (2026-05-06)
 
 
