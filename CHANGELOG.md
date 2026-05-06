@@ -1,3 +1,10 @@
+## [12.1.1](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v12.1.0...v12.1.1) (2026-05-06)
+
+
+### Bug Fixes
+
+* added custom schemas in readme ([c160030](https://github.com/alevnyacow/stompbox-spring-reverb/commit/c1600301d420ef9ce54b8848ef9914eac80b5d43))
+
 # [12.1.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v12.0.0...v12.1.0) (2026-05-04)
 
 
