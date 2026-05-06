@@ -1,3 +1,10 @@
+## [13.0.1](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v13.0.0...v13.0.1) (2026-05-06)
+
+
+### Bug Fixes
+
+* removed hardcoded `onError` ([13de9f2](https://github.com/alevnyacow/stompbox-spring-reverb/commit/13de9f2dd8c63033de053147ade7f442a9fd2318))
+
 # [13.0.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v12.1.3...v13.0.0) (2026-05-06)
 
 
