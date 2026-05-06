@@ -78,15 +78,3 @@ export type ComplexZodSchemaPart<T extends ZodObject> =
         // @ts-ignore
         : ZodObject<Pick<Shape, ComplexZodSchemaKeys<T>>> 
     : never
-
-
-const fff = z.object({ asfsaf: z.number(), fasfsa: z.string(), fafsfaaa: z.array(z.nan()) })
-
-
-type FFF = ComplexZodSchemaPart<typeof fff>
-
-
-const s: PrimitiveZodSchemaPart<typeof fff> = z.object({
-    asfsaf: z.number(),
-    fasfsa: z.string()
-})
