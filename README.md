@@ -121,6 +121,68 @@ export type PUTEndpoint = EndpointContracts<typeof PUT>
  */ 
 ```
 
+#### Custom schemas
+
+```ts
+// app/api/some/path/route.ts
+
+import { nextAdapter } from '@stompbox/spring-reverb/next'
+import type { EndpointContracts } from '@stompbox/spring-reverb'
+import { greet } from '@/use-cases'
+
+export const PUT = greet.REST(nextAdapter)..customSchema(
+    (inputSchema) => {
+        return {
+        query: inputSchema
+            .omit({ greetingOptions: true })
+            .extend({ 
+                greetingWord: z.enum(['Hello', 'Hi'])
+            })
+        }
+    },
+    (x) => ({
+        firstName: x.firstName,
+        lastName: x.lastName,
+        greetingOptions: {
+            start: x.greetingWord
+        }
+    })
+)
+
+// request and response DTOs, can be used on client
+/**
+ * {
+ *     requestDetails: {
+ *         query: { 
+ *             lastName: string, 
+ *             firstName: string,
+ *             greetingWord: 'Hello' | 'Hi'
+ *         },
+ *     },
+ *     requestDTO: { 
+ *         firstName: string, 
+ *         lastName: string,
+ *         greetingWord: 'Hello' | 'Hi'
+ *     },
+ *     responseDTO: { 
+ *         greetingText: string 
+ *     }
+ * }
+ */
+export type PUTEndpoint = EndpointContracts<typeof PUT>
+
+/**
+ * PUT /api/some/path?firstName=Player&lastName=one
+ * 
+ * Body:
+ * ```
+ * { greetingOptions: { start: 'Hello' } }
+ * ```
+ * 
+ * => { greetingText: 'Hello, Player one!' }
+ */ 
+```
+
 ### Creating a handler with context
 
 ```ts
