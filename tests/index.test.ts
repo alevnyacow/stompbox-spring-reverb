@@ -23,10 +23,14 @@ const upperCase = createHandler({
     return { stringInUpperCase: `${string.toUpperCase()} ${secondString.toUpperCase()}` } 
   },
   middlewares: {
+    beforeHandler: [
+      async ({ context, parsedInput }) => {
+        console.log(context, parsedInput)
+      }
+    ],
     afterHandler: [
-      async ({ context, output, parsedInput  }, next) => {
+      async ({ context, output, parsedInput }) => {
         console.log('after', context, output, parsedInput)
-        await next()
       }
     ],
     onError: [

@@ -225,23 +225,21 @@ const upperCase = createHandler({
   },
   middlewares: {
     beforeHandler: [
-      async ({ parsedInput, context }, next) => {
+      async ({ parsedInput, context }) => {
         console.log('before', parsedInput)
         if (!context.isLoggedIn) {
           throw new Error('Not logged in!')
         }
-        await next()
       }
     ],
     afterHandler: [
-      async ({ context, output, parsedInput  }, next) => {
+      async ({ context, output, parsedInput }) => {
         console.log('after', context, output, parsedInput)
-        await next()
       }
     ],
     onError: [
-      async (x) => {
-        console.error('ERROR HAPPENED', x)
+      async (error) => {
+        console.error('ERROR HAPPENED', error)
       }
     ]
   }

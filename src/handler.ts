@@ -26,13 +26,11 @@ export type SpringReverbHandler<InputSchema extends ZodType, OutputSchema extend
 export class SpringReverbError extends Limiter(SpringReverbErrorCodes) {}
 
 export type PreHandlerMiddleware<Input = void, Ctx = void> = (
-    ctx: { parsedInput: Input, context: Ctx },
-    next: () => Promise<void>
+    ctx: { parsedInput: Input, context: Ctx }
 ) => Promise<void>
 
 export type AfterHandlerMiddleware<Input = void, Output = void, Ctx = void> = (
-    ctx: { parsedInput: Input, context: Ctx, output: Output },
-    next: () => Promise<void>
+    ctx: { parsedInput: Input, context: Ctx, output: Output }
 ) => Promise<void>
 
 const springReverbBase = <
@@ -60,7 +58,7 @@ const springReverbBase = <
         z.infer<Input>,
         z.infer<Output>,
         Context
-    > = async (ctx, next) => {
+    > = async (ctx) => {
         try {
             const parsedInput = inputSchema.safeParse(ctx.rawInput)
             if (!parsedInput.success) {
@@ -79,8 +77,6 @@ const springReverbBase = <
             if (typeof handler === 'object' && 'getContext' in handler) {
                 ctx.context = await handler.getContext()
             }
-
-            await next()
         } catch (e: any) {
             ctx.error =
                 e instanceof Error
@@ -101,7 +97,7 @@ const springReverbBase = <
         z.infer<Input>,
         z.infer<Output>,
         Context
-    > = async (ctx, next) => {
+    > = async (ctx) => {
         if (ctx.error) return
 
         try {
@@ -140,8 +136,6 @@ const springReverbBase = <
         } catch (e: any) {
             ctx.error = e
         }
-
-        await next()
     }
 
     const pipeline = compose([

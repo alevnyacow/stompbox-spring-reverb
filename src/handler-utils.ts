@@ -9,8 +9,7 @@ export type SpringContext<Input, Output, Ctx> = {
 }
 
 export type _Middleware<Input, Output, Ctx> = (
-    ctx: SpringContext<Input, Output, Ctx>,
-    next: () => Promise<void>
+    ctx: SpringContext<Input, Output, Ctx>
 ) => Promise<void>
 
 export const compose = <Input, Output, Ctx>(
@@ -42,7 +41,8 @@ export const compose = <Input, Output, Ctx>(
             }
 
             // @ts-ignore
-            await fn(ctx, () => dispatch(i + 1))
+            await fn(ctx)
+            await dispatch(i + 1)
         }
 
         return dispatch(0)
