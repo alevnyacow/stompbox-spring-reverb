@@ -1,112 +1,132 @@
-import { expect, test } from '@rstest/core';
-import { createHandler } from '../src/handler'
-import z from 'zod';
-import { NextRequest } from 'next/server';
-import { nextAdapter } from '../src/next'
-import express from 'express'
-import { expressAdapter } from '../src/express'
-import { EndpointContracts } from '../src/api-adapter-types';
-import { newContainer } from '@stompbox/tape-delay';
-import { enrichDetails, Limiter } from '@stompbox/limiter'
+import { expect, test } from "@rstest/core";
+import { createHandler } from "../src/handler";
+import z from "zod";
+import { NextRequest } from "next/server";
+import { nextAdapter } from "../src/next";
+import express from "express";
+import { expressAdapter } from "../src/express";
+import {
+    ControllerContracts,
+    EndpointContracts,
+} from "../src/api-adapter-types";
+import { newContainer } from "@stompbox/tape-delay";
+import { enrichDetails, Limiter } from "@stompbox/limiter";
 
 const TestError = Limiter({
-  test: { defaultDetails: enrichDetails.withResponseStatusCode(404)(), name: 'not_found' }
-})
+    test: {
+        defaultDetails: enrichDetails.withResponseStatusCode(404)(),
+        name: "not_found",
+    },
+});
 
 const upperCase = createHandler({
-  input: z.object({ string: z.string(), secondString: z.string() }),
-  output: z.object({ stringInUpperCase: z.string() }),
-  handler: ({ secondString, string }) => { 
-    if (string === 'THROW_ERROR') {
-      throw new TestError('test')
-    }
-    return { stringInUpperCase: `${string.toUpperCase()} ${secondString.toUpperCase()}` } 
-  },
-  middlewares: {
-    beforeHandler: [
-      async ({ context, parsedInput }) => {
-        console.log(context, parsedInput)
-      }
-    ],
-    afterHandler: [
-      async ({ context, output, parsedInput }) => {
-        console.log('after', context, output, parsedInput)
-      }
-    ],
-    onError: [
-      async (x) => {
-        console.error('ERROR HAPPENED', x)
-      }
-    ]
-  }
-})
-
-test('Express adapter', async () => {
-  const app = express();
-
-  const expressEndpoint = upperCase.REST(expressAdapter)
-  
-  app.get('/', expressEndpoint);
-
-  type A = EndpointContracts<typeof expressEndpoint>
-
-  const server = await new Promise<ReturnType<typeof app.listen>>((resolve) => {
-    const s = app.listen(0, () => resolve(s));
-  });
-
-  const port = (server.address() as any).port;
-
-  const result = await fetch(
-    `http://localhost:${port}?string=hello&secondString=world`
-  );
-
-  const json = await result.json();
-
-  expect(json).toEqual({ stringInUpperCase: 'HELLO WORLD' })
-
-
-  const result2 = await fetch(
-    `http://localhost:${port}?string=THROW_ERROR&secondString=world`
-  );
-
-  const status = result2.status;
-
-  expect(status).toBe(404)
-
-  server.close();
+    input: z.object({ string: z.string(), secondString: z.string() }),
+    output: z.object({ stringInUpperCase: z.string() }),
+    handler: ({ secondString, string }) => {
+        if (string === "THROW_ERROR") {
+            throw new TestError("test");
+        }
+        return {
+            stringInUpperCase: `${string.toUpperCase()} ${secondString.toUpperCase()}`,
+        };
+    },
+    middlewares: {
+        beforeHandler: [
+            async ({ context, parsedInput }) => {
+                console.log(context, parsedInput);
+            },
+        ],
+        afterHandler: [
+            async ({ context, output, parsedInput }) => {
+                console.log("after", context, output, parsedInput);
+            },
+        ],
+        onError: [
+            async (x) => {
+                console.error("ERROR HAPPENED", x);
+            },
+        ],
+    },
 });
 
-test('Next adapter', async () => {
-  const NextRoute = upperCase.REST(nextAdapter).customSchema(({pick, omit}) => {
-    return {
-      bodySchema: pick({ secondString: true }),
-      querySchema: omit({ secondString: true }),
-    }
-  })
+test("Express adapter", async () => {
+    const app = express();
 
-  type A = EndpointContracts<typeof NextRoute>
+    const expressEndpoint = upperCase.REST(expressAdapter);
 
-  const data = await NextRoute(new NextRequest('http://localhost.mock.url:3000?string=hello', {
-    body: JSON.stringify({ secondString: 'world' }),
-    method: 'POST'
-  }))
-  const body = await data.json()
-  expect(body).toEqual({stringInUpperCase: 'HELLO WORLD'})
+    app.get("/", expressEndpoint);
+
+    type A = EndpointContracts<typeof expressEndpoint>;
+
+    const aa = {
+        fsaffas: expressEndpoint,
+        fasfa: expressEndpoint,
+    };
+
+    const server = await new Promise<ReturnType<typeof app.listen>>(
+        (resolve) => {
+            const s = app.listen(0, () => resolve(s));
+        },
+    );
+
+    const port = (server.address() as any).port;
+
+    const result = await fetch(
+        `http://localhost:${port}?string=hello&secondString=world`,
+    );
+
+    const json = await result.json();
+
+    expect(json).toEqual({ stringInUpperCase: "HELLO WORLD" });
+
+    const result2 = await fetch(
+        `http://localhost:${port}?string=THROW_ERROR&secondString=world`,
+    );
+
+    const status = result2.status;
+
+    expect(status).toBe(404);
+
+    server.close();
 });
 
-test('Tape delay', async () => {
-  class RandomNumber { getNumber = () => Math.random() }
-  const container = newContainer({ RandomNumber })
+test("Next adapter", async () => {
+    const NextRoute = upperCase
+        .REST(nextAdapter)
+        .customSchema(({ pick, omit }) => {
+            return {
+                bodySchema: pick({ secondString: true }),
+                querySchema: omit({ secondString: true }),
+            };
+        });
 
-  const f = createHandler({
-    input: z.number(),
-    output: z.number(),
-    getContext: container.resolve,
-    handler: (i, ctx) => i + ctx.randomNumber.getNumber()
-  })
+    type A = EndpointContracts<typeof NextRoute>;
 
-  const result = await f.orThrow(2)
+    const data = await NextRoute(
+        new NextRequest("http://localhost.mock.url:3000?string=hello", {
+            body: JSON.stringify({ secondString: "world" }),
+            method: "POST",
+        }),
+    );
+    const body = await data.json();
+    expect(body).toEqual({ stringInUpperCase: "HELLO WORLD" });
+});
 
-  expect(result).toBeGreaterThan(2)
-  expect(result).toBeLessThan(3)
-})
+test("Tape delay", async () => {
+    class RandomNumber {
+        getNumber = () => Math.random();
+    }
+    const container = newContainer({ RandomNumber });
+
+    const f = createHandler({
+        input: z.number(),
+        output: z.number(),
+        getContext: container.resolve,
+        handler: (i, ctx) => i + ctx.randomNumber.getNumber(),
+    });
+
+    const result = await f.orThrow(2);
+
+    expect(result).toBeGreaterThan(2);
+    expect(result).toBeLessThan(3);
+});
