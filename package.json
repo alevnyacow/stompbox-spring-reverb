@@ -1,7 +1,7 @@
 {
   "name": "@stompbox/spring-reverb",
   "license": "MIT",
-  "version": "13.0.3",
+  "version": "13.1.0",
   "keywords": [
     "handler",
     "use case",

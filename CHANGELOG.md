@@ -1,3 +1,10 @@
+# [13.1.0](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v13.0.3...v13.1.0) (2026-05-16)
+
+
+### Features
+
+* added `ControllerContracts` ([4f4dd5b](https://github.com/alevnyacow/stompbox-spring-reverb/commit/4f4dd5b027268197055fc6ef34545a20f38117b5))
+
 ## [13.0.3](https://github.com/alevnyacow/stompbox-spring-reverb/compare/v13.0.2...v13.0.3) (2026-05-06)
 
 
