@@ -1,5 +1,5 @@
 import { expect, test } from "@rstest/core";
-import { createHandler } from "../src/handler";
+import { handler, handlerWithCtx } from "../src/handler";
 import z from "zod";
 import { NextRequest } from "next/server";
 import { nextAdapter } from "../src/next";
@@ -19,7 +19,7 @@ const TestError = Limiter({
     },
 });
 
-const upperCase = createHandler({
+const upperCase = handler({
     input: z.object({ string: z.string(), secondString: z.string() }),
     output: z.object({ stringInUpperCase: z.string() }),
     handler: ({ secondString, string }) => {
@@ -118,12 +118,14 @@ test("Tape delay", async () => {
     }
     const container = newContainer({ RandomNumber });
 
-    const f = createHandler({
+    const randomNumberGenerator = handlerWithCtx({
         input: z.number(),
         output: z.number(),
-        getContext: container.resolve,
-        handler: (i, ctx) => i + ctx.randomNumber.getNumber(),
+        handler: (i, ctx: { randomNumber: RandomNumber }) =>
+            i + ctx.randomNumber.getNumber(),
     });
+
+    const f = randomNumberGenerator(container.resolve);
 
     const result = await f.orThrow(2);
 

@@ -7,10 +7,10 @@ Framework-agnostic handlers with built-in adapters for Next and Express.
 ### Creating a handler
 
 ```ts
-import { createHandler } from '@stompbox/spring-reverb'
+import { handler } from '@stompbox/spring-reverb'
 import z from 'zod'
 
-export const greet = createHandler({
+export const greet = handler({
     input: z.object({
         firstName: z.string(), 
         lastName: z.string(),
@@ -27,7 +27,9 @@ export const greet = createHandler({
             greetingText: `${start}${firstName} ${lastName}!`
         }
     }
-})
+})(
+    () => { }/**  */
+)
 
 /** 
  * safe approach with result of
@@ -130,7 +132,7 @@ import { nextAdapter } from '@stompbox/spring-reverb/next'
 import type { EndpointContracts } from '@stompbox/spring-reverb'
 import { greet } from '@/use-cases'
 
-export const PUT = greet.REST(nextAdapter)..customSchema(
+export const PUT = greet.REST(nextAdapter).customSchema(
     (inputSchema) => {
         return {
             query: inputSchema
@@ -182,7 +184,7 @@ export type PUTEndpoint = EndpointContracts<typeof PUT>
 
 ```ts
 import z from 'zod'
-import { createHandler } from '@stompbox/spring-reverb'
+import { handlerWithCtx } from '@stompbox/spring-reverb'
 
 const userSchema = z.object({
     id: z.string(), 
@@ -198,26 +200,37 @@ class UserRepository {
     }
 }
 
-const findUser = createHandler({
+const findUserWithCtx = handlerWithCtx({
     input: z.string(),
     output: userSchema.nullable(),
-    getContext: () => ({ userRepository: new UserRepository() }),   
-    handler: async (id, ({ userRepository })) => {
-        return userRepository.findById(id)
+    handler: async (id, (ctx: { userRepository: UserRepository })) => {
+        return ctx.userRepository.findById(id)
     }
 })
 
+// You can pass context as object.
+const findUser = findUserWithCtx({ 
+    userRepository: new UserRepository() 
+})
+/**
+ * Or you can pass generator
+ * const findUser = findUserWithCtx(() => ({ 
+ *     userRepository: new UserRepository()
+ * }))
+ */ 
+ 
 const result = await findUser('test-id')
+
+const findUserREST = findUser.REST(/* adapter */)
 ```
 
 ### Middlewares
 
 ```tsx
-const upperCase = createHandler({
+const upperCaseWithCtx = newHandlerWithCtx({
   input: z.object({ string: z.string(), secondString: z.string() }),
   output: z.object({ stringInUpperCase: z.string() }),
-  getContext: () => { return { isLoggedIn: Math.random() > 0.5 } },
-  handler: ({ secondString, string }) => { 
+  handler: ({ secondString, string }, ctx: { isLoggedIn: boolean }) => { 
     if (string === 'THROW_ERROR') {
       throw new TestError('test')
     }
@@ -244,4 +257,10 @@ const upperCase = createHandler({
     ]
   }
 })
+
+const upperCase = upperCaseWithCtx(
+    () => ({
+        isLoggedIn: Math.random() > 0.5
+    })
+)
 ```

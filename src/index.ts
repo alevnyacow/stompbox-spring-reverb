@@ -1,4 +1,4 @@
-export { createHandler, SpringReverbError } from "./handler";
+export { SpringReverbError, handler, handlerWithCtx } from "./handler";
 export type {
     EndpointContracts,
     ControllerContracts,
