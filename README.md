@@ -27,9 +27,7 @@ export const greet = handler({
             greetingText: `${start}${firstName} ${lastName}!`
         }
     }
-})(
-    () => { }/**  */
-)
+})
 
 /** 
  * safe approach with result of
